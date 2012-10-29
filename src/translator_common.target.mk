@@ -48,6 +48,7 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/util.cpp \
 	third_party/angle/src/compiler/ValidateLimitations.cpp \
 	third_party/angle/src/compiler/VariableInfo.cpp \
+	third_party/angle/src/compiler/VariablePacker.cpp \
 	third_party/angle/src/compiler/preprocessor/atom.c \
 	third_party/angle/src/compiler/preprocessor/cpp.c \
 	third_party/angle/src/compiler/preprocessor/cppstruct.c \
