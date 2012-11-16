@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -73,7 +73,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)../;$(ProjectDir)../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;ANGLE_USE_NEW_PREPROCESSOR=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -109,7 +109,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)../;$(ProjectDir)../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;_SECURE_SCL=0;ANGLE_USE_NEW_PREPROCESSOR=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_DEPRECATE;NOMINMAX;_SECURE_SCL=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -165,13 +165,6 @@
     <ClCompile Include="ValidateLimitations.cpp" />
     <ClCompile Include="VariableInfo.cpp" />
     <ClCompile Include="VariablePacker.cpp" />
-    <ClCompile Include="preprocessor\atom.c" />
-    <ClCompile Include="preprocessor\cpp.c" />
-    <ClCompile Include="preprocessor\cppstruct.c" />
-    <ClCompile Include="preprocessor\memory.c" />
-    <ClCompile Include="preprocessor\scanner.c" />
-    <ClCompile Include="preprocessor\symbols.c" />
-    <ClCompile Include="preprocessor\tokens.c" />
     <ClCompile Include="glslang_lex.cpp" />
     <ClCompile Include="glslang_tab.cpp" />
     <ClCompile Include="depgraph\DependencyGraph.cpp" />
@@ -241,6 +234,7 @@
     <ClInclude Include="Diagnostics.h" />
     <ClInclude Include="DirectiveHandler.h" />
     <ClInclude Include="ForLoopUnroll.h" />
+    <ClInclude Include="HashNames.h" />
     <ClInclude Include="InfoSink.h" />
     <ClInclude Include="Initialize.h" />
     <ClInclude Include="InitializeDll.h" />
@@ -265,17 +259,6 @@
     <ClInclude Include="ValidateLimitations.h" />
     <ClInclude Include="VariableInfo.h" />
     <ClInclude Include="VariablePacker.h" />
-    <ClInclude Include="preprocessor\atom.h" />
-    <ClInclude Include="preprocessor\compile.h" />
-    <ClInclude Include="preprocessor\cpp.h" />
-    <ClInclude Include="preprocessor\length_limits.h" />
-    <ClInclude Include="preprocessor\memory.h" />
-    <ClInclude Include="preprocessor\parser.h" />
-    <ClInclude Include="preprocessor\preprocess.h" />
-    <ClInclude Include="preprocessor\scanner.h" />
-    <ClInclude Include="preprocessor\slglobals.h" />
-    <ClInclude Include="preprocessor\symbols.h" />
-    <ClInclude Include="preprocessor\tokens.h" />
     <ClInclude Include="glslang_tab.h" />
     <ClInclude Include="timing\RestrictFragmentShaderTiming.h" />
     <ClInclude Include="timing\RestrictVertexShaderTiming.h" />
@@ -284,7 +267,7 @@
     <ClInclude Include="depgraph\DependencyGraphOutput.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="preprocessor\new\preprocessor.vcxproj">
+    <ProjectReference Include="preprocessor\preprocessor.vcxproj">
       <Project>{fbe32df3-0fb0-4f2f-a424-2c21bd7bc325}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Private>true</Private>
