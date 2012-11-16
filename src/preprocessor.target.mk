@@ -22,17 +22,17 @@ LOCAL_GENERATED_SOURCES :=
 GYP_COPIED_SOURCE_ORIGIN_DIRS :=
 
 LOCAL_SRC_FILES := \
-	third_party/angle/src/compiler/preprocessor/new/Diagnostics.cpp \
-	third_party/angle/src/compiler/preprocessor/new/DirectiveHandler.cpp \
-	third_party/angle/src/compiler/preprocessor/new/DirectiveParser.cpp \
-	third_party/angle/src/compiler/preprocessor/new/ExpressionParser.cpp \
-	third_party/angle/src/compiler/preprocessor/new/Input.cpp \
-	third_party/angle/src/compiler/preprocessor/new/Lexer.cpp \
-	third_party/angle/src/compiler/preprocessor/new/Macro.cpp \
-	third_party/angle/src/compiler/preprocessor/new/MacroExpander.cpp \
-	third_party/angle/src/compiler/preprocessor/new/Preprocessor.cpp \
-	third_party/angle/src/compiler/preprocessor/new/Token.cpp \
-	third_party/angle/src/compiler/preprocessor/new/Tokenizer.cpp
+	third_party/angle/src/compiler/preprocessor/Diagnostics.cpp \
+	third_party/angle/src/compiler/preprocessor/DirectiveHandler.cpp \
+	third_party/angle/src/compiler/preprocessor/DirectiveParser.cpp \
+	third_party/angle/src/compiler/preprocessor/ExpressionParser.cpp \
+	third_party/angle/src/compiler/preprocessor/Input.cpp \
+	third_party/angle/src/compiler/preprocessor/Lexer.cpp \
+	third_party/angle/src/compiler/preprocessor/Macro.cpp \
+	third_party/angle/src/compiler/preprocessor/MacroExpander.cpp \
+	third_party/angle/src/compiler/preprocessor/Preprocessor.cpp \
+	third_party/angle/src/compiler/preprocessor/Token.cpp \
+	third_party/angle/src/compiler/preprocessor/Tokenizer.cpp
 
 
 # Flags passed to both C and C++ files.
@@ -81,8 +81,7 @@ MY_CFLAGS_C :=
 
 MY_DEFS := \
 	'-DANGLE_DISABLE_TRACE' \
-	'-DANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL0' \
-	'-DANGLE_USE_NEW_PREPROCESSOR=1' \
+	'-DANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ L"d3dcompiler_46.dll", L"d3dcompiler_43.dll" }' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DNO_TCMALLOC' \
 	'-DDISABLE_NACL' \

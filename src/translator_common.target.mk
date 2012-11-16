@@ -49,13 +49,6 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/ValidateLimitations.cpp \
 	third_party/angle/src/compiler/VariableInfo.cpp \
 	third_party/angle/src/compiler/VariablePacker.cpp \
-	third_party/angle/src/compiler/preprocessor/atom.c \
-	third_party/angle/src/compiler/preprocessor/cpp.c \
-	third_party/angle/src/compiler/preprocessor/cppstruct.c \
-	third_party/angle/src/compiler/preprocessor/memory.c \
-	third_party/angle/src/compiler/preprocessor/scanner.c \
-	third_party/angle/src/compiler/preprocessor/symbols.c \
-	third_party/angle/src/compiler/preprocessor/tokens.c \
 	third_party/angle/src/compiler/depgraph/DependencyGraph.cpp \
 	third_party/angle/src/compiler/depgraph/DependencyGraphBuilder.cpp \
 	third_party/angle/src/compiler/depgraph/DependencyGraphOutput.cpp \
@@ -111,8 +104,7 @@ MY_CFLAGS_C :=
 
 MY_DEFS := \
 	'-DANGLE_DISABLE_TRACE' \
-	'-DANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL0' \
-	'-DANGLE_USE_NEW_PREPROCESSOR=1' \
+	'-DANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ L"d3dcompiler_46.dll", L"d3dcompiler_43.dll" }' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DNO_TCMALLOC' \
 	'-DDISABLE_NACL' \
