@@ -3,7 +3,7 @@
 include $(CLEAR_VARS)
 
 LOCAL_MODULE_CLASS := STATIC_LIBRARIES
-LOCAL_MODULE := third_party_angle_src_translator_glsl_gyp
+LOCAL_MODULE := third_party_angle_src_translator_common_gyp
 LOCAL_MODULE_SUFFIX := .a
 LOCAL_MODULE_TAGS := optional
 gyp_intermediate_dir := $(call local-intermediates-dir)
@@ -22,18 +22,46 @@ LOCAL_GENERATED_SOURCES :=
 GYP_COPIED_SOURCE_ORIGIN_DIRS :=
 
 LOCAL_SRC_FILES := \
-	third_party/angle/src/compiler/CodeGenGLSL.cpp \
-	third_party/angle/src/compiler/OutputESSL.cpp \
-	third_party/angle/src/compiler/OutputGLSLBase.cpp \
-	third_party/angle/src/compiler/OutputGLSL.cpp \
-	third_party/angle/src/compiler/ShaderLang.cpp \
-	third_party/angle/src/compiler/TranslatorESSL.cpp \
-	third_party/angle/src/compiler/TranslatorGLSL.cpp \
-	third_party/angle/src/compiler/VersionGLSL.cpp
+	third_party/angle/src/compiler/BuiltInFunctionEmulator.cpp \
+	third_party/angle/src/compiler/Compiler.cpp \
+	third_party/angle/src/compiler/debug.cpp \
+	third_party/angle/src/compiler/DetectRecursion.cpp \
+	third_party/angle/src/compiler/Diagnostics.cpp \
+	third_party/angle/src/compiler/DirectiveHandler.cpp \
+	third_party/angle/src/compiler/ForLoopUnroll.cpp \
+	third_party/angle/src/compiler/glslang_lex.cpp \
+	third_party/angle/src/compiler/glslang_tab.cpp \
+	third_party/angle/src/compiler/InfoSink.cpp \
+	third_party/angle/src/compiler/Initialize.cpp \
+	third_party/angle/src/compiler/InitializeDll.cpp \
+	third_party/angle/src/compiler/InitializeParseContext.cpp \
+	third_party/angle/src/compiler/Intermediate.cpp \
+	third_party/angle/src/compiler/intermOut.cpp \
+	third_party/angle/src/compiler/IntermTraverse.cpp \
+	third_party/angle/src/compiler/MapLongVariableNames.cpp \
+	third_party/angle/src/compiler/parseConst.cpp \
+	third_party/angle/src/compiler/ParseHelper.cpp \
+	third_party/angle/src/compiler/PoolAlloc.cpp \
+	third_party/angle/src/compiler/QualifierAlive.cpp \
+	third_party/angle/src/compiler/RemoveTree.cpp \
+	third_party/angle/src/compiler/SymbolTable.cpp \
+	third_party/angle/src/compiler/util.cpp \
+	third_party/angle/src/compiler/ValidateLimitations.cpp \
+	third_party/angle/src/compiler/VariableInfo.cpp \
+	third_party/angle/src/compiler/VariablePacker.cpp \
+	third_party/angle/src/compiler/depgraph/DependencyGraph.cpp \
+	third_party/angle/src/compiler/depgraph/DependencyGraphBuilder.cpp \
+	third_party/angle/src/compiler/depgraph/DependencyGraphOutput.cpp \
+	third_party/angle/src/compiler/depgraph/DependencyGraphTraverse.cpp \
+	third_party/angle/src/compiler/timing/RestrictFragmentShaderTiming.cpp \
+	third_party/angle/src/compiler/timing/RestrictVertexShaderTiming.cpp \
+	third_party/angle/src/compiler/ossource_posix.cpp
 
 
 # Flags passed to both C and C++ files.
 MY_CFLAGS := \
+	-fstack-protector \
+	--param=ssp-buffer-size=4 \
 	-fno-exceptions \
 	-fno-strict-aliasing \
 	-Wno-unused-parameter \
@@ -58,6 +86,7 @@ MY_CFLAGS := \
 	-fno-short-enums \
 	-finline-limit=64 \
 	-Wa,--noexecstack \
+	-U_FORTIFY_SOURCE \
 	-Wno-error=extra \
 	-Wno-error=ignored-qualifiers \
 	-Wno-error=type-limits \
@@ -125,6 +154,8 @@ LOCAL_CPPFLAGS := \
 ### Rules for final target.
 
 LOCAL_LDFLAGS := \
+	-Wl,-z,now \
+	-Wl,-z,relro \
 	-Wl,-z,noexecstack \
 	-fPIC \
 	-Wl,-z,relro \
@@ -150,10 +181,10 @@ LOCAL_SHARED_LIBRARIES := \
 
 # Add target alias to "gyp_all_modules" target.
 .PHONY: gyp_all_modules
-gyp_all_modules: third_party_angle_src_translator_glsl_gyp
+gyp_all_modules: third_party_angle_src_translator_common_gyp
 
 # Alias gyp target name.
-.PHONY: translator_glsl
-translator_glsl: third_party_angle_src_translator_glsl_gyp
+.PHONY: translator_common
+translator_common: third_party_angle_src_translator_common_gyp
 
 include $(BUILD_STATIC_LIBRARY)
