@@ -1608,7 +1608,14 @@ bool ProgramBinary::linkVaryings(InfoLog &infoLog, std::string& pixelHLSL, std::
                         pixelHLSL += "[" + str(j) + "]";
                     }
 
-                    pixelHLSL += " = input.v" + n + ";\n";
+                    switch (VariableColumnCount(varying->type))
+                    {
+                      case 1: pixelHLSL += " = input.v" + n + ".x;\n";   break;
+                      case 2: pixelHLSL += " = input.v" + n + ".xy;\n";  break;
+                      case 3: pixelHLSL += " = input.v" + n + ".xyz;\n"; break;
+                      case 4: pixelHLSL += " = input.v" + n + ";\n";     break;
+                      default: UNREACHABLE();
+                    }
                 }
             }
         }
@@ -1678,6 +1685,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
 
     stream.read(&mUsedVertexSamplerRange);
     stream.read(&mUsedPixelSamplerRange);
+    stream.read(&mUsesPointSize);
 
     unsigned int size;
     stream.read(&size);
@@ -1806,6 +1814,7 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
 
     stream.write(mUsedVertexSamplerRange);
     stream.write(mUsedPixelSamplerRange);
+    stream.write(mUsesPointSize);
 
     stream.write(mUniforms.size());
     for (unsigned int i = 0; i < mUniforms.size(); ++i)
