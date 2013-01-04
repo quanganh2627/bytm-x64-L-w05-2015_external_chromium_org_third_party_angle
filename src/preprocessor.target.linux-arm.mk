@@ -22,8 +22,8 @@ LOCAL_GENERATED_SOURCES :=
 GYP_COPIED_SOURCE_ORIGIN_DIRS :=
 
 LOCAL_SRC_FILES := \
-	third_party/angle/src/compiler/preprocessor/Diagnostics.cpp \
-	third_party/angle/src/compiler/preprocessor/DirectiveHandler.cpp \
+	third_party/angle/src/compiler/preprocessor/DiagnosticsBase.cpp \
+	third_party/angle/src/compiler/preprocessor/DirectiveHandlerBase.cpp \
 	third_party/angle/src/compiler/preprocessor/DirectiveParser.cpp \
 	third_party/angle/src/compiler/preprocessor/ExpressionParser.cpp \
 	third_party/angle/src/compiler/preprocessor/Input.cpp \
