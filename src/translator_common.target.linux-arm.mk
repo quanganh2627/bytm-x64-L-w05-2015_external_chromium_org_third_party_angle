@@ -22,7 +22,6 @@ LOCAL_GENERATED_SOURCES :=
 GYP_COPIED_SOURCE_ORIGIN_DIRS :=
 
 LOCAL_SRC_FILES := \
-	third_party/angle/src/compiler/ArrayBoundsClamper.cpp \
 	third_party/angle/src/compiler/BuiltInFunctionEmulator.cpp \
 	third_party/angle/src/compiler/Compiler.cpp \
 	third_party/angle/src/compiler/debug.cpp \
@@ -56,6 +55,7 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/depgraph/DependencyGraphTraverse.cpp \
 	third_party/angle/src/compiler/timing/RestrictFragmentShaderTiming.cpp \
 	third_party/angle/src/compiler/timing/RestrictVertexShaderTiming.cpp \
+	third_party/angle/src/third_party/compiler/ArrayBoundsClamper.cpp \
 	third_party/angle/src/compiler/ossource_posix.cpp
 
 
