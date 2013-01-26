@@ -24,7 +24,9 @@ WHICH GENERATES THE GLSL ES preprocessor expression parser.
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 // Triggered by the auto-generated pplval variable.
 #pragma GCC diagnostic ignored "-Wuninitialized"
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7))
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
 #pragma GCC diagnostic warning "-Wunknown-pragmas"
 #elif defined(_MSC_VER)
 #pragma warning(disable: 4065 4701)
