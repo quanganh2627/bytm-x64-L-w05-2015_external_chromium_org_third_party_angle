@@ -47,15 +47,9 @@ MY_CFLAGS := \
 	-pipe \
 	-fPIC \
 	-Wno-format \
-	-mthumb \
-	-march=armv7-a \
-	-mtune=cortex-a8 \
-	-mfloat-abi=softfp \
-	-mfpu=vfpv3-d16 \
 	-fno-tree-sra \
 	-fuse-ld=gold \
 	-Wno-psabi \
-	-mthumb-interwork \
 	-ffunction-sections \
 	-funwind-tables \
 	-g \
@@ -67,11 +61,8 @@ MY_CFLAGS := \
 	-Wno-extra \
 	-Wno-ignored-qualifiers \
 	-Wno-type-limits \
-	-Wno-non-virtual-dtor \
-	-Wno-sign-promo \
 	-Wno-address \
 	-Wno-format-security \
-	-Wno-non-virtual-dtor \
 	-Wno-return-type \
 	-Wno-sequence-point \
 	-Os \
@@ -125,7 +116,10 @@ LOCAL_CPPFLAGS := \
 	-fvisibility-inlines-hidden \
 	-Wno-deprecated \
 	-Wno-abi \
-	-Wno-error=c++0x-compat
+	-Wno-error=c++0x-compat \
+	-Wno-non-virtual-dtor \
+	-Wno-sign-promo \
+	-Wno-non-virtual-dtor
 
 ### Rules for final target.
 
