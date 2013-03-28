@@ -1044,7 +1044,7 @@ ID3D10Blob *ProgramBinary::compileToBinary(InfoLog &infoLog, const char *hlsl, c
         return NULL;
     }
 
-    DWORD result = NOERROR;
+    HRESULT result = S_OK;
     UINT flags = 0;
     std::string sourceText;
     if (perfActive())
@@ -1086,8 +1086,7 @@ ID3D10Blob *ProgramBinary::compileToBinary(InfoLog &infoLog, const char *hlsl, c
     {
         ID3D10Blob *errorMessage = NULL;
         ID3D10Blob *binary = NULL;
-        result = D3DCompile(hlsl, strlen(hlsl), g_fakepath, NULL, NULL, "main", profile, flags | extraFlags[i], 0, &binary, &errorMessage);
-
+        result = getDisplay()->compileShaderSource(hlsl, g_fakepath, profile, flags | extraFlags[i], &binary, &errorMessage);
         if (errorMessage)
         {
             const char *message = (const char*)errorMessage->GetBufferPointer();
@@ -1609,7 +1608,14 @@ bool ProgramBinary::linkVaryings(InfoLog &infoLog, std::string& pixelHLSL, std::
                         pixelHLSL += "[" + str(j) + "]";
                     }
 
-                    pixelHLSL += " = input.v" + n + ";\n";
+                    switch (VariableColumnCount(varying->type))
+                    {
+                      case 1: pixelHLSL += " = input.v" + n + ".x;\n";   break;
+                      case 2: pixelHLSL += " = input.v" + n + ".xy;\n";  break;
+                      case 3: pixelHLSL += " = input.v" + n + ".xyz;\n"; break;
+                      case 4: pixelHLSL += " = input.v" + n + ";\n";     break;
+                      default: UNREACHABLE();
+                    }
                 }
             }
         }
@@ -1642,7 +1648,7 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
 
     int version = 0;
     stream.read(&version);
-    if (version != BUILD_REVISION)
+    if (version != VERSION_DWORD)
     {
         infoLog.append("Invalid program binary version.");
         return false;
@@ -1679,8 +1685,9 @@ bool ProgramBinary::load(InfoLog &infoLog, const void *binary, GLsizei length)
 
     stream.read(&mUsedVertexSamplerRange);
     stream.read(&mUsedPixelSamplerRange);
+    stream.read(&mUsesPointSize);
 
-    unsigned int size;
+    size_t size;
     stream.read(&size);
     if (stream.error())
     {
@@ -1782,7 +1789,7 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
     BinaryOutputStream stream;
 
     stream.write(GL_PROGRAM_BINARY_ANGLE);
-    stream.write(BUILD_REVISION);
+    stream.write(VERSION_DWORD);
 
     for (unsigned int i = 0; i < MAX_VERTEX_ATTRIBS; ++i)
     {
@@ -1807,6 +1814,7 @@ bool ProgramBinary::save(void* binary, GLsizei bufSize, GLsizei *length)
 
     stream.write(mUsedVertexSamplerRange);
     stream.write(mUsedPixelSamplerRange);
+    stream.write(mUsesPointSize);
 
     stream.write(mUniforms.size());
     for (unsigned int i = 0; i < mUniforms.size(); ++i)

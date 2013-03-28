@@ -9,8 +9,8 @@
   'target_defaults': {
     'defines': [
       'ANGLE_DISABLE_TRACE',
-      'ANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL0',
-      'ANGLE_USE_NEW_PREPROCESSOR=1',
+      'ANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL1',
+      'ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ TEXT("d3dcompiler_46.dll"), TEXT("d3dcompiler_43.dll") }',
     ],
   },
   'targets': [
@@ -20,32 +20,37 @@
       'include_dirs': [
       ],
       'sources': [
-        'compiler/preprocessor/new/Diagnostics.cpp',
-        'compiler/preprocessor/new/Diagnostics.h',
-        'compiler/preprocessor/new/DirectiveHandler.cpp',
-        'compiler/preprocessor/new/DirectiveHandler.h',
-        'compiler/preprocessor/new/DirectiveParser.cpp',
-        'compiler/preprocessor/new/DirectiveParser.h',
-        'compiler/preprocessor/new/ExpressionParser.cpp',
-        'compiler/preprocessor/new/ExpressionParser.h',
-        'compiler/preprocessor/new/Input.cpp',
-        'compiler/preprocessor/new/Input.h',
-        'compiler/preprocessor/new/Lexer.cpp',
-        'compiler/preprocessor/new/Lexer.h',
-        'compiler/preprocessor/new/Macro.cpp',
-        'compiler/preprocessor/new/Macro.h',
-        'compiler/preprocessor/new/MacroExpander.cpp',
-        'compiler/preprocessor/new/MacroExpander.h',
-        'compiler/preprocessor/new/numeric_lex.h',
-        'compiler/preprocessor/new/pp_utils.h',
-        'compiler/preprocessor/new/Preprocessor.cpp',
-        'compiler/preprocessor/new/Preprocessor.h',
-        'compiler/preprocessor/new/SourceLocation.h',
-        'compiler/preprocessor/new/Token.cpp',
-        'compiler/preprocessor/new/Token.h',
-        'compiler/preprocessor/new/Tokenizer.cpp',
-        'compiler/preprocessor/new/Tokenizer.h',
+        'compiler/preprocessor/DiagnosticsBase.cpp',
+        'compiler/preprocessor/DiagnosticsBase.h',
+        'compiler/preprocessor/DirectiveHandlerBase.cpp',
+        'compiler/preprocessor/DirectiveHandlerBase.h',
+        'compiler/preprocessor/DirectiveParser.cpp',
+        'compiler/preprocessor/DirectiveParser.h',
+        'compiler/preprocessor/ExpressionParser.cpp',
+        'compiler/preprocessor/ExpressionParser.h',
+        'compiler/preprocessor/Input.cpp',
+        'compiler/preprocessor/Input.h',
+        'compiler/preprocessor/length_limits.h',
+        'compiler/preprocessor/Lexer.cpp',
+        'compiler/preprocessor/Lexer.h',
+        'compiler/preprocessor/Macro.cpp',
+        'compiler/preprocessor/Macro.h',
+        'compiler/preprocessor/MacroExpander.cpp',
+        'compiler/preprocessor/MacroExpander.h',
+        'compiler/preprocessor/numeric_lex.h',
+        'compiler/preprocessor/pp_utils.h',
+        'compiler/preprocessor/Preprocessor.cpp',
+        'compiler/preprocessor/Preprocessor.h',
+        'compiler/preprocessor/SourceLocation.h',
+        'compiler/preprocessor/Token.cpp',
+        'compiler/preprocessor/Token.h',
+        'compiler/preprocessor/Tokenizer.cpp',
+        'compiler/preprocessor/Tokenizer.h',
       ],
+      # TODO(jschuh): http://crbug.com/167187
+      'msvs_disabled_warnings': [
+        4267,
+      ],      
     },
     {
       'target_name': 'translator_common',
@@ -80,6 +85,7 @@
         'compiler/glslang_lex.cpp',
         'compiler/glslang_tab.cpp',
         'compiler/glslang_tab.h',
+        'compiler/HashNames.h',
         'compiler/InfoSink.cpp',
         'compiler/InfoSink.h',
         'compiler/Initialize.cpp',
@@ -120,25 +126,6 @@
         'compiler/VariableInfo.h',
         'compiler/VariablePacker.cpp',
         'compiler/VariablePacker.h',
-        # Old preprocessor
-        'compiler/preprocessor/atom.c',
-        'compiler/preprocessor/atom.h',
-        'compiler/preprocessor/compile.h',
-        'compiler/preprocessor/cpp.c',
-        'compiler/preprocessor/cpp.h',
-        'compiler/preprocessor/cppstruct.c',
-        'compiler/preprocessor/length_limits.h',
-        'compiler/preprocessor/memory.c',
-        'compiler/preprocessor/memory.h',
-        'compiler/preprocessor/parser.h',
-        'compiler/preprocessor/preprocess.h',
-        'compiler/preprocessor/scanner.c',
-        'compiler/preprocessor/scanner.h',
-        'compiler/preprocessor/slglobals.h',
-        'compiler/preprocessor/symbols.c',
-        'compiler/preprocessor/symbols.h',
-        'compiler/preprocessor/tokens.c',
-        'compiler/preprocessor/tokens.h',
         # Dependency graph
         'compiler/depgraph/DependencyGraph.cpp',
         'compiler/depgraph/DependencyGraph.h',
@@ -152,9 +139,13 @@
         'compiler/timing/RestrictFragmentShaderTiming.h',
         'compiler/timing/RestrictVertexShaderTiming.cpp',
         'compiler/timing/RestrictVertexShaderTiming.h',
+        'third_party/compiler/ArrayBoundsClamper.cpp',
+        'third_party/compiler/ArrayBoundsClamper.h',
       ],
       'conditions': [
         ['OS=="win"', {
+          # TODO(jschuh): http://crbug.com/167187 size_t -> int
+          'msvs_disabled_warnings': [ 4267 ],
           'sources': ['compiler/ossource_win.cpp'],
         }, { # else: posix
           'sources': ['compiler/ossource_posix.cpp'],
@@ -188,6 +179,8 @@
         'compiler/VersionGLSL.cpp',
         'compiler/VersionGLSL.h',
       ],
+      # TODO(jschuh): http://crbug.com/167187 size_t -> int
+      'msvs_disabled_warnings': [ 4267 ],
     },
   ],
   'conditions': [
@@ -218,6 +211,8 @@
             'compiler/SearchSymbol.cpp',
             'compiler/SearchSymbol.h',
           ],
+          # TODO(jschuh): http://crbug.com/167187 size_t -> int
+          'msvs_disabled_warnings': [ 4267 ],
         },
         {
           'target_name': 'libGLESv2',
@@ -226,7 +221,6 @@
           'include_dirs': [
             '.',
             '../include',
-            '$(DXSDK_DIR)/include',
           ],
           'sources': [
             'common/angleutils.h',
@@ -280,13 +274,12 @@
             'libGLESv2/utilities.cpp',
             'libGLESv2/utilities.h',
           ],
+          # TODO(jschuh): http://crbug.com/167187 size_t -> int
+          'msvs_disabled_warnings': [ 4267 ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
               'AdditionalDependencies': [
                 'd3d9.lib',
-                'd3dx9.lib',
-                'd3dcompiler.lib',
               ],
             }
           },
@@ -318,9 +311,10 @@
             'libEGL/Surface.cpp',
             'libEGL/Surface.h',
           ],
+          # TODO(jschuh): http://crbug.com/167187 size_t -> int
+          'msvs_disabled_warnings': [ 4267 ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'AdditionalLibraryDirectories': ['$(DXSDK_DIR)/lib/x86'],
               'AdditionalDependencies': [
                 'd3d9.lib',
                 'dxguid.lib',
