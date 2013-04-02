@@ -51,6 +51,7 @@ MY_CFLAGS := \
 	-march=pentium4 \
 	-msse2 \
 	-mfpmath=sse \
+	-fuse-ld=gold \
 	-ffunction-sections \
 	-funwind-tables \
 	-g \
@@ -75,7 +76,6 @@ MY_CFLAGS := \
 MY_CFLAGS_C :=
 
 MY_DEFS := \
-	'-DUSE_SKIA' \
 	'-DANGLE_DISABLE_TRACE' \
 	'-DANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL1' \
 	'-DANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ TEXT("d3dcompiler_46.dll"), TEXT("d3dcompiler_43.dll") }' \
@@ -86,7 +86,6 @@ MY_DEFS := \
 	'-DCHROMIUM_BUILD' \
 	'-DUSE_LIBJPEG_TURBO=1' \
 	'-DUSE_PROPRIETARY_CODECS' \
-	'-DENABLE_PEPPER_THREADING' \
 	'-DENABLE_GPU=1' \
 	'-DUSE_OPENSSL=1' \
 	'-DENABLE_EGLIMAGE=1' \
@@ -129,6 +128,7 @@ LOCAL_LDFLAGS := \
 	-Wl,-z,noexecstack \
 	-fPIC \
 	-m32 \
+	-fuse-ld=gold \
 	-nostdlib \
 	-Wl,--no-undefined \
 	-Wl,--exclude-libs=ALL \
