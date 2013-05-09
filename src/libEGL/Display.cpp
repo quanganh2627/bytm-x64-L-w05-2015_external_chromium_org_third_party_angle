@@ -86,6 +86,8 @@ Display::Display(EGLNativeDisplayType displayId, HDC deviceContext, bool softwar
         mDeviceType = D3DDEVTYPE_HAL;
     #endif
 
+    mDisplayMode = D3DDISPLAYMODE();
+
     mMinSwapInterval = 1;
     mMaxSwapInterval = 1;
     mSoftwareDevice = software;
@@ -252,8 +254,11 @@ bool Display::initialize()
         //  D3DFMT_D24FS8
         };
 
-        D3DDISPLAYMODE currentDisplayMode;
-        mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
+        if (FAILED(mD3d9->GetAdapterDisplayMode(mAdapter, &mDisplayMode)))
+        {
+            terminate();
+            return false;
+        }
 
         ConfigSet configSet;
 
@@ -261,7 +266,7 @@ bool Display::initialize()
         {
             D3DFORMAT renderTargetFormat = renderTargetFormats[formatIndex];
 
-            HRESULT result = mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, renderTargetFormat);
+            HRESULT result = mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, renderTargetFormat);
 
             if (SUCCEEDED(result))
             {
@@ -272,21 +277,21 @@ bool Display::initialize()
                     
                     if(depthStencilFormat != D3DFMT_UNKNOWN)
                     {
-                        result = mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, depthStencilFormat);
+                        result = mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, depthStencilFormat);
                     }
 
                     if (SUCCEEDED(result))
                     {
                         if(depthStencilFormat != D3DFMT_UNKNOWN)
                         {
-                            result = mD3d9->CheckDepthStencilMatch(mAdapter, mDeviceType, currentDisplayMode.Format, renderTargetFormat, depthStencilFormat);
+                            result = mD3d9->CheckDepthStencilMatch(mAdapter, mDeviceType, mDisplayMode.Format, renderTargetFormat, depthStencilFormat);
                         }
 
                         if (SUCCEEDED(result))
                         {
                             // FIXME: enumerate multi-sampling
 
-                            configSet.add(currentDisplayMode, mMinSwapInterval, mMaxSwapInterval, renderTargetFormat, depthStencilFormat, 0,
+                            configSet.add(mDisplayMode, mMinSwapInterval, mMaxSwapInterval, renderTargetFormat, depthStencilFormat, 0,
                                           mDeviceCaps.MaxTextureWidth, mDeviceCaps.MaxTextureHeight);
                         }
                     }
@@ -916,34 +921,7 @@ bool Display::testDeviceLost()
 
     if (mDeviceEx)
     {
-        HRESULT hr = mDeviceEx->CheckDeviceState(NULL);
-        if (hr == S_PRESENT_MODE_CHANGED)
-        {
-            // Reset the device so that D3D stops reporting S_PRESENT_MODE_CHANGED. Otherwise it will report
-            // it continuously, potentially masking a lost device. D3D resources are not lost on a mode change with WDDM.
-            D3DPRESENT_PARAMETERS presentParameters = getDefaultPresentParameters();
-            mDeviceEx->Reset(&presentParameters);
-
-            // Existing swap chains sometimes crash on the next present after a reset.
-            for (SurfaceSet::iterator it = mSurfaceSet.begin(); it != mSurfaceSet.end(); ++it)
-            {
-                (*it)->recreateAdditionalSwapChain();
-            }
-
-            // Reset will not always cause the device loss to be reported so issue a dummy present.
-            mDeviceEx->Present(NULL, NULL, NULL, NULL);
-
-            // Retest the device status to see if the mode change really indicated a lost device.
-            hr = mDeviceEx->CheckDeviceState(NULL);
-        }
-        else if (hr == S_PRESENT_OCCLUDED)
-        {
-            // CheckDeviceLost continuously returns S_PRESENT_OCCLUDED while the screen is locked. Calling Present
-            // unmasks the device lost error.
-            mDeviceEx->Present(NULL, NULL, NULL, NULL);
-            hr = mDeviceEx->CheckDeviceState(NULL);
-        }
-        isLost = FAILED(hr);
+        isLost = FAILED(mDeviceEx->CheckDeviceState(NULL));
     }
     else if (mDevice)
     {
@@ -1059,26 +1037,17 @@ void Display::getMultiSampleSupport(D3DFORMAT format, bool *multiSampleArray)
 
 bool Display::getDXT1TextureSupport()
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT1));
+    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT1));
 }
 
 bool Display::getDXT3TextureSupport()
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT3));
+    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT3));
 }
 
 bool Display::getDXT5TextureSupport()
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT5));
+    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_DXT5));
 }
 
 // we use INTZ for depth textures in Direct3D9
@@ -1086,12 +1055,9 @@ bool Display::getDXT5TextureSupport()
 // see http://aras-p.info/texts/D3D9GPUHacks.html
 bool Display::getDepthTextureSupport() const
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    bool intz = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format,
+    bool intz = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format,
                                                    D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_TEXTURE, D3DFMT_INTZ));
-    bool null = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format,
+    bool null = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format,
                                                    D3DUSAGE_RENDERTARGET, D3DRTYPE_SURFACE, D3DFMT_NULL));
 
     return intz && null;
@@ -1099,24 +1065,21 @@ bool Display::getDepthTextureSupport() const
 
 bool Display::getFloat32TextureSupport(bool *filtering, bool *renderable)
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    *filtering = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_QUERY_FILTER, 
+    *filtering = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_QUERY_FILTER, 
                                                     D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)) &&
-                 SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_QUERY_FILTER,
+                 SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_QUERY_FILTER,
                                                     D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F));
     
-    *renderable = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_RENDERTARGET,
+    *renderable = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_RENDERTARGET,
                                                      D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F))&&
-                  SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_RENDERTARGET,
+                  SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_RENDERTARGET,
                                                      D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F));
 
     if (!*filtering && !*renderable)
     {
-        return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, 
+        return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, 
                                                   D3DRTYPE_TEXTURE, D3DFMT_A32B32G32R32F)) &&
-               SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0,
+               SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0,
                                                   D3DRTYPE_CUBETEXTURE, D3DFMT_A32B32G32R32F));
     }
     else
@@ -1127,24 +1090,21 @@ bool Display::getFloat32TextureSupport(bool *filtering, bool *renderable)
 
 bool Display::getFloat16TextureSupport(bool *filtering, bool *renderable)
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    *filtering = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_QUERY_FILTER, 
+    *filtering = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_QUERY_FILTER, 
                                                     D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)) &&
-                 SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_QUERY_FILTER,
+                 SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_QUERY_FILTER,
                                                     D3DRTYPE_CUBETEXTURE, D3DFMT_A16B16G16R16F));
     
-    *renderable = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_RENDERTARGET, 
+    *renderable = SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_RENDERTARGET, 
                                                     D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)) &&
-                 SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_RENDERTARGET,
+                 SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_RENDERTARGET,
                                                     D3DRTYPE_CUBETEXTURE, D3DFMT_A16B16G16R16F));
 
     if (!*filtering && !*renderable)
     {
-        return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, 
+        return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, 
                                                   D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16F)) &&
-               SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0,
+               SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0,
                                                   D3DRTYPE_CUBETEXTURE, D3DFMT_A16B16G16R16F));
     }
     else
@@ -1155,18 +1115,12 @@ bool Display::getFloat16TextureSupport(bool *filtering, bool *renderable)
 
 bool Display::getLuminanceTextureSupport()
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_L8));
+    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_L8));
 }
 
 bool Display::getLuminanceAlphaTextureSupport()
 {
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_A8L8));
+    return SUCCEEDED(mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, 0, D3DRTYPE_TEXTURE, D3DFMT_A8L8));
 }
 
 float Display::getTextureFilterAnisotropySupport() const
@@ -1320,10 +1274,7 @@ bool Display::getVertexTextureSupport() const
         return false;
     }
 
-    D3DDISPLAYMODE currentDisplayMode;
-    mD3d9->GetAdapterDisplayMode(mAdapter, &currentDisplayMode);
-
-    HRESULT result = mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, currentDisplayMode.Format, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R16F);
+    HRESULT result = mD3d9->CheckDeviceFormat(mAdapter, mDeviceType, mDisplayMode.Format, D3DUSAGE_QUERY_VERTEXTEXTURE, D3DRTYPE_TEXTURE, D3DFMT_R16F);
 
     return SUCCEEDED(result);
 }
