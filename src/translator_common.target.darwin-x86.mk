@@ -25,7 +25,7 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/BuiltInFunctionEmulator.cpp \
 	third_party/angle/src/compiler/Compiler.cpp \
 	third_party/angle/src/compiler/debug.cpp \
-	third_party/angle/src/compiler/DetectRecursion.cpp \
+	third_party/angle/src/compiler/DetectCallDepth.cpp \
 	third_party/angle/src/compiler/Diagnostics.cpp \
 	third_party/angle/src/compiler/DirectiveHandler.cpp \
 	third_party/angle/src/compiler/ForLoopUnroll.cpp \
