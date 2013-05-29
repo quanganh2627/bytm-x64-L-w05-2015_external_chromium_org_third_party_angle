@@ -25,7 +25,7 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/BuiltInFunctionEmulator.cpp \
 	third_party/angle/src/compiler/Compiler.cpp \
 	third_party/angle/src/compiler/debug.cpp \
-	third_party/angle/src/compiler/DetectRecursion.cpp \
+	third_party/angle/src/compiler/DetectCallDepth.cpp \
 	third_party/angle/src/compiler/Diagnostics.cpp \
 	third_party/angle/src/compiler/DirectiveHandler.cpp \
 	third_party/angle/src/compiler/ForLoopUnroll.cpp \
@@ -106,6 +106,7 @@ MY_DEFS := \
 	'-DNO_TCMALLOC' \
 	'-DDISABLE_NACL' \
 	'-DCHROMIUM_BUILD' \
+	'-DENABLE_DOUBLE_RESOURCE_LOAD_TIMING' \
 	'-DUSE_LIBJPEG_TURBO=1' \
 	'-DUSE_PROPRIETARY_CODECS' \
 	'-DENABLE_GPU=1' \
@@ -128,9 +129,9 @@ LOCAL_CFLAGS := $(MY_CFLAGS_C) $(MY_CFLAGS) $(MY_DEFS)
 LOCAL_C_INCLUDES := \
 	$(LOCAL_PATH)/third_party/angle/src \
 	$(LOCAL_PATH)/third_party/angle/include \
-	$(GYP_ABS_ANDROID_TOP_DIR)/frameworks/wilhelm/include \
-	$(GYP_ABS_ANDROID_TOP_DIR)/bionic \
-	$(GYP_ABS_ANDROID_TOP_DIR)/external/stlport/stlport
+	$(PWD)/frameworks/wilhelm/include \
+	$(PWD)/bionic \
+	$(PWD)/external/stlport/stlport
 
 LOCAL_C_INCLUDES := $(GYP_COPIED_SOURCE_ORIGIN_DIRS) $(LOCAL_C_INCLUDES)
 
