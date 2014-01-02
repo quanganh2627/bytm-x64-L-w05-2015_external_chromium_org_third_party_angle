@@ -205,8 +205,7 @@ class TInfoSink;
 //
 class TIntermNode {
 public:
-    POOL_ALLOCATOR_NEW_DELETE(GlobalPoolAllocator)
-
+    POOL_ALLOCATOR_NEW_DELETE();
     TIntermNode() {
         // TODO: Move this to TSourceLoc constructor
         // after getting rid of TPublicType.
@@ -228,6 +227,11 @@ public:
     virtual TIntermSymbol* getAsSymbolNode() { return 0; }
     virtual TIntermLoop* getAsLoopNode() { return 0; }
 
+    // Replace a child node. Return true if |original| is a child
+    // node and it is replaced; otherwise, return false.
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement) = 0;
+
 protected:
     TSourceLoc line;
 };
@@ -248,6 +252,8 @@ public:
     TIntermTyped(const TType& t) : type(t)  { }
     virtual TIntermTyped* getAsTyped() { return this; }
 
+    virtual bool hasSideEffects() const = 0;
+
     void setType(const TType& t) { type = t; }
     const TType& getType() const { return type; }
     TType* getTypePointer() { return &type; }
@@ -264,6 +270,10 @@ public:
     const char* getBasicString() const { return type.getBasicString(); }
     const char* getQualifierString() const { return type.getQualifierString(); }
     TString getCompleteString() const { return type.getCompleteString(); }
+
+    int totalRegisterCount() const { return type.totalRegisterCount(); }
+    int elementRegisterCount() const { return type.elementRegisterCount(); }
+    int getArraySize() const { return type.getArraySize(); }
 
 protected:
     TType type;
@@ -292,6 +302,8 @@ public:
 
     virtual TIntermLoop* getAsLoopNode() { return this; }
     virtual void traverse(TIntermTraverser*);
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement);
 
     TLoopType getType() const { return type; }
     TIntermNode* getInit() { return init; }
@@ -322,6 +334,8 @@ public:
             expression(e) { }
 
     virtual void traverse(TIntermTraverser*);
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement);
 
     TOperator getFlowOp() { return flowOp; }
     TIntermTyped* getExpression() { return expression; }
@@ -342,6 +356,8 @@ public:
     TIntermSymbol(int i, const TString& sym, const TType& t) : 
             TIntermTyped(t), id(i)  { symbol = sym; originalSymbol = sym; } 
 
+    virtual bool hasSideEffects() const { return false; }
+
     int getId() const { return id; }
     const TString& getSymbol() const { return symbol; }
 
@@ -352,6 +368,7 @@ public:
 
     virtual void traverse(TIntermTraverser*);
     virtual TIntermSymbol* getAsSymbolNode() { return this; }
+    virtual bool replaceChildNode(TIntermNode *, TIntermNode *) { return false; }
 
 protected:
     int id;
@@ -363,14 +380,17 @@ class TIntermConstantUnion : public TIntermTyped {
 public:
     TIntermConstantUnion(ConstantUnion *unionPointer, const TType& t) : TIntermTyped(t), unionArrayPointer(unionPointer) { }
 
+    virtual bool hasSideEffects() const { return false; }
+
     ConstantUnion* getUnionArrayPointer() const { return unionArrayPointer; }
     
-    int getIConst(int index) const { return unionArrayPointer ? unionArrayPointer[index].getIConst() : 0; }
-    float getFConst(int index) const { return unionArrayPointer ? unionArrayPointer[index].getFConst() : 0.0f; }
-    bool getBConst(int index) const { return unionArrayPointer ? unionArrayPointer[index].getBConst() : false; }
+    int getIConst(size_t index) const { return unionArrayPointer ? unionArrayPointer[index].getIConst() : 0; }
+    float getFConst(size_t index) const { return unionArrayPointer ? unionArrayPointer[index].getFConst() : 0.0f; }
+    bool getBConst(size_t index) const { return unionArrayPointer ? unionArrayPointer[index].getBConst() : false; }
 
     virtual TIntermConstantUnion* getAsConstantUnion()  { return this; }
     virtual void traverse(TIntermTraverser*);
+    virtual bool replaceChildNode(TIntermNode *, TIntermNode *) { return false; }
 
     TIntermTyped* fold(TOperator, TIntermTyped*, TInfoSink&);
 
@@ -386,8 +406,10 @@ public:
     TOperator getOp() const { return op; }
     void setOp(TOperator o) { op = o; }
 
-    bool modifiesState() const;
+    bool isAssignment() const;
     bool isConstructor() const;
+
+    virtual bool hasSideEffects() const { return isAssignment(); }
 
 protected:
     TIntermOperator(TOperator o) : TIntermTyped(TType(EbtFloat, EbpUndefined)), op(o) {}
@@ -404,6 +426,10 @@ public:
 
     virtual TIntermBinary* getAsBinaryNode() { return this; }
     virtual void traverse(TIntermTraverser*);
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement);
+
+    virtual bool hasSideEffects() const { return (isAssignment() || left->hasSideEffects() || right->hasSideEffects()); }
 
     void setLeft(TIntermTyped* n) { left = n; }
     void setRight(TIntermTyped* n) { right = n; }
@@ -432,6 +458,10 @@ public:
 
     virtual void traverse(TIntermTraverser*);
     virtual TIntermUnary* getAsUnaryNode() { return this; }
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement);
+
+    virtual bool hasSideEffects() const { return (isAssignment() || operand->hasSideEffects()); }
 
     void setOperand(TIntermTyped* o) { operand = o; }
     TIntermTyped* getOperand() { return operand; }    
@@ -462,6 +492,11 @@ public:
 
     virtual TIntermAggregate* getAsAggregate() { return this; }
     virtual void traverse(TIntermTraverser*);
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement);
+
+    // Conservatively assume function calls and other aggregate operators have side-effects
+    virtual bool hasSideEffects() const { return true; }
 
     TIntermSequence& getSequence() { return sequence; }
 
@@ -505,6 +540,11 @@ public:
             TIntermTyped(type), condition(cond), trueBlock(trueB), falseBlock(falseB) {}
 
     virtual void traverse(TIntermTraverser*);
+    virtual bool replaceChildNode(
+        TIntermNode *original, TIntermNode *replacement);
+
+    // Conservatively assume selections have side-effects
+    virtual bool hasSideEffects() const { return true; }
 
     bool usesTernaryOperator() const { return getBasicType() != EbtVoid; }
     TIntermNode* getCondition() const { return condition; }
@@ -536,8 +576,7 @@ enum Visit
 class TIntermTraverser
 {
 public:
-    POOL_ALLOCATOR_NEW_DELETE(GlobalPoolAllocator)
-
+    POOL_ALLOCATOR_NEW_DELETE();
     TIntermTraverser(bool preVisit = true, bool inVisit = false, bool postVisit = false, bool rightToLeft = false) : 
             preVisit(preVisit),
             inVisit(inVisit),
@@ -545,7 +584,7 @@ public:
             rightToLeft(rightToLeft),
             depth(0),
             maxDepth(0) {}
-    virtual ~TIntermTraverser() {};
+    virtual ~TIntermTraverser() {}
 
     virtual void visitSymbol(TIntermSymbol*) {}
     virtual void visitConstantUnion(TIntermConstantUnion*) {}
@@ -557,8 +596,24 @@ public:
     virtual bool visitBranch(Visit visit, TIntermBranch*) {return true;}
 
     int getMaxDepth() const {return maxDepth;}
-    void incrementDepth() {depth++; maxDepth = std::max(maxDepth, depth); }
-    void decrementDepth() {depth--;}
+
+    void incrementDepth(TIntermNode *current)
+    {
+        depth++;
+        maxDepth = std::max(maxDepth, depth);
+        path.push_back(current);
+    }
+
+    void decrementDepth()
+    {
+        depth--;
+        path.pop_back();
+    }
+
+    TIntermNode *getParentNode()
+    {
+        return path.size() == 0 ? NULL : path.back();
+    }
 
     // Return the original name if hash function pointer is NULL;
     // otherwise return the hashed name.
@@ -572,6 +627,9 @@ public:
 protected:
     int depth;
     int maxDepth;
+
+    // All the nodes from root to the current node's parent during traversing.
+    TVector<TIntermNode *> path;
 };
 
 #endif // __INTERMEDIATE_H

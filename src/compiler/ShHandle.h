@@ -27,6 +27,7 @@
 class LongNameMap;
 class TCompiler;
 class TDependencyGraph;
+class TranslatorHLSL;
 
 //
 // Helper function to identify specs that are based on the WebGL spec,
@@ -42,6 +43,7 @@ public:
     TShHandleBase();
     virtual ~TShHandleBase();
     virtual TCompiler* getAsCompiler() { return 0; }
+    virtual TranslatorHLSL* getAsTranslatorHLSL() { return 0; }
 
 protected:
     // Memory allocator. Allocates and tracks memory required by the compiler.
@@ -68,6 +70,7 @@ public:
     TInfoSink& getInfoSink() { return infoSink; }
     const TVariableInfoList& getAttribs() const { return attribs; }
     const TVariableInfoList& getUniforms() const { return uniforms; }
+    const TVariableInfoList& getVaryings() const { return varyings; }
     int getMappedNameMaxLength() const;
 
     ShHashFunction64 getHashFunction() const { return hashFunction; }
@@ -88,8 +91,8 @@ protected:
     // Returns true if the given shader does not exceed the minimum
     // functionality mandated in GLSL 1.0 spec Appendix A.
     bool validateLimitations(TIntermNode* root);
-    // Collect info for all attribs and uniforms.
-    void collectAttribsUniforms(TIntermNode* root);
+    // Collect info for all attribs, uniforms, varyings.
+    void collectVariables(TIntermNode* root);
     // Map long variable names into shorter ones.
     void mapLongVariableNames(TIntermNode* root);
     // Translate to object code.
@@ -108,6 +111,8 @@ protected:
     bool limitExpressionComplexity(TIntermNode* root);
     // Get built-in extensions with default behavior.
     const TExtensionBehavior& getExtensionBehavior() const;
+    // Get the resources set by InitBuiltInSymbolTable
+    const ShBuiltInResources& getResources() const;
 
     const ArrayBoundsClamper& getArrayBoundsClamper() const;
     ShArrayIndexClampingStrategy getArrayIndexClampingStrategy() const;
@@ -120,6 +125,8 @@ private:
     int maxUniformVectors;
     int maxExpressionComplexity;
     int maxCallStackDepth;
+
+    ShBuiltInResources compileResources;
 
     // Built-in symbol table for the given language, spec, and resources.
     // It is preserved from compile-to-compile.
@@ -136,6 +143,7 @@ private:
     TInfoSink infoSink;  // Output sink.
     TVariableInfoList attribs;  // Active attributes in the compiled shader.
     TVariableInfoList uniforms;  // Active uniforms in the compiled shader.
+    TVariableInfoList varyings;  // Varyings in the compiled shader.
 
     // Cached copy of the ref-counted singleton.
     LongNameMap* longNameMap;
