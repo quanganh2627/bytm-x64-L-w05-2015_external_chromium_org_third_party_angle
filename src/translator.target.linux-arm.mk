@@ -86,6 +86,7 @@ MY_CFLAGS_Debug := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-funwind-tables \
 	-Wno-format \
 	-fno-tree-sra \
 	-fuse-ld=gold \
@@ -175,6 +176,7 @@ MY_CFLAGS_Release := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-funwind-tables \
 	-Wno-format \
 	-fno-tree-sra \
 	-fuse-ld=gold \

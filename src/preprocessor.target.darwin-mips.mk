@@ -47,6 +47,7 @@ MY_CFLAGS_Debug := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-funwind-tables \
 	-Wno-format \
 	-EL \
 	-mhard-float \
@@ -133,6 +134,7 @@ MY_CFLAGS_Release := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-funwind-tables \
 	-Wno-format \
 	-EL \
 	-mhard-float \
