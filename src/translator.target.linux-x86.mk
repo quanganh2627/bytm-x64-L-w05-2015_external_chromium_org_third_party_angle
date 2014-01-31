@@ -52,6 +52,7 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/translator/RemoveTree.cpp \
 	third_party/angle/src/compiler/translator/MapLongVariableNames.cpp \
 	third_party/angle/src/compiler/translator/BuiltInFunctionEmulator.cpp \
+	third_party/angle/src/compiler/translator/RewriteElseBlocks.cpp \
 	third_party/angle/src/compiler/translator/QualifierAlive.cpp \
 	third_party/angle/src/compiler/translator/Uniform.cpp \
 	third_party/angle/src/compiler/translator/InitializeParseContext.cpp \
@@ -119,8 +120,6 @@ MY_CFLAGS_Debug := \
 
 MY_DEFS_Debug := \
 	'-DV8_DEPRECATION_WARNINGS' \
-	'-DANGLE_DISABLE_TRACE' \
-	'-DANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL1' \
 	'-DANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ TEXT("d3dcompiler_46.dll"), TEXT("d3dcompiler_43.dll") }' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DNO_TCMALLOC' \
@@ -208,8 +207,6 @@ MY_CFLAGS_Release := \
 
 MY_DEFS_Release := \
 	'-DV8_DEPRECATION_WARNINGS' \
-	'-DANGLE_DISABLE_TRACE' \
-	'-DANGLE_COMPILE_OPTIMIZATION_LEVEL=D3DCOMPILE_OPTIMIZATION_LEVEL1' \
 	'-DANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ TEXT("d3dcompiler_46.dll"), TEXT("d3dcompiler_43.dll") }' \
 	'-D_FILE_OFFSET_BITS=64' \
 	'-DNO_TCMALLOC' \
