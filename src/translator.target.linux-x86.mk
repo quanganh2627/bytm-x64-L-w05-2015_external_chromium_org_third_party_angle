@@ -47,8 +47,8 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/translator/OutputESSL.cpp \
 	third_party/angle/src/compiler/translator/CodeGen.cpp \
 	third_party/angle/src/compiler/translator/ossource_posix.cpp \
-	third_party/angle/src/compiler/translator/InitializeGLPosition.cpp \
 	third_party/angle/src/compiler/translator/ValidateLimitations.cpp \
+	third_party/angle/src/compiler/translator/InitializeVariables.cpp \
 	third_party/angle/src/compiler/translator/RemoveTree.cpp \
 	third_party/angle/src/compiler/translator/MapLongVariableNames.cpp \
 	third_party/angle/src/compiler/translator/BuiltInFunctionEmulator.cpp \
