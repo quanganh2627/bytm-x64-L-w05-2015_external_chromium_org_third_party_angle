@@ -106,6 +106,7 @@ MY_CFLAGS_Debug := \
 	-Wno-extra \
 	-Wno-ignored-qualifiers \
 	-Wno-type-limits \
+	-Wno-unused-but-set-variable \
 	-fno-stack-protector \
 	-Wno-address \
 	-Wno-format-security \
@@ -193,6 +194,7 @@ MY_CFLAGS_Release := \
 	-Wno-extra \
 	-Wno-ignored-qualifiers \
 	-Wno-type-limits \
+	-Wno-unused-but-set-variable \
 	-fno-stack-protector \
 	-Wno-address \
 	-Wno-format-security \
