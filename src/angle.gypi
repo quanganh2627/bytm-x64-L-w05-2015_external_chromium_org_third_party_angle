@@ -27,6 +27,20 @@
                 'targets':
                 [
                     {
+                        'target_name': 'commit_id',
+                        'type': 'none',
+                        'actions':
+                        [
+                            {
+                                'action_name': 'Generate Commit ID Header',
+                                'message': 'Generating commit ID header...',
+                                'inputs': [ 'commit_id.bat' ],
+                                'outputs': ['<(SHARED_INTERMEDIATE_DIR)/commit.h'],
+                                'action': ['<(angle_relative_src_path)commit_id.bat', '<(SHARED_INTERMEDIATE_DIR)'],
+                            }
+                        ] #actions
+                    },
+                    {
                         'target_name': 'copy_compiler_dll',
                         'type': 'none',
                         'sources': [ 'copy_compiler_dll.bat' ],
@@ -71,6 +85,28 @@
                     }
                 ] # targets
             }
-        ]
+        ],
+        [
+            'OS!="win"',
+            {
+                'targets':
+                [
+                    {
+                        'target_name': 'commit_id',
+                        'type': 'none',
+                        'actions':
+                        [
+                            {
+                                'action_name': 'Generate Commit ID Header',
+                                'message': 'Generating commit ID header...',
+                                'inputs': [ 'commit_id.py' ],
+                                'outputs': ['<(SHARED_INTERMEDIATE_DIR)/commit.h'],
+                                'action': ['python', '<(angle_relative_src_path)commit_id.py', '<(SHARED_INTERMEDIATE_DIR)/commit.h'],
+                            }
+                        ] #actions
+                    },
+                ]
+            }
+        ],
     ] # conditions
 }
