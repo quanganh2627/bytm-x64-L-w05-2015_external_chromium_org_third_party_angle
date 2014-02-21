@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2010 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
             case 'i': compileOptions |= SH_INTERMEDIATE_TREE; break;
             case 'm': compileOptions |= SH_MAP_LONG_VARIABLE_NAMES; break;
             case 'o': compileOptions |= SH_OBJECT_CODE; break;
-            case 'u': compileOptions |= SH_ATTRIBUTES_UNIFORMS; break;
+            case 'u': compileOptions |= SH_VARIABLES; break;
             case 'l': compileOptions |= SH_UNROLL_FOR_LOOP_WITH_INTEGER_INDEX; break;
             case 'e': compileOptions |= SH_EMULATE_BUILT_IN_FUNCTIONS; break;
             case 'd': compileOptions |= SH_DEPENDENCY_GRAPH; break;
@@ -105,7 +105,16 @@ int main(int argc, char* argv[])
                     switch (argv[0][3]) {
                     case 'e': output = SH_ESSL_OUTPUT; break;
                     case 'g': output = SH_GLSL_OUTPUT; break;
-                    case 'h': output = SH_HLSL_OUTPUT; break;
+                    case 'h':
+                        if (argv[0][4] == '1' && argv[0][5] == '1')
+                        {
+                            output = SH_HLSL11_OUTPUT;
+                        }
+                        else
+                        {
+                            output = SH_HLSL9_OUTPUT;
+                        }
+                        break;
                     default: failCode = EFailUsage;
                     }
                 } else {
@@ -163,7 +172,7 @@ int main(int argc, char* argv[])
                   LogMsg("END", "COMPILER", numCompiles, "OBJ CODE");
                   printf("\n\n");
               }
-              if (compiled && (compileOptions & SH_ATTRIBUTES_UNIFORMS)) {
+              if (compiled && (compileOptions & SH_VARIABLES)) {
                   LogMsg("BEGIN", "COMPILER", numCompiles, "ACTIVE ATTRIBS");
                   PrintActiveVariables(compiler, SH_ACTIVE_ATTRIBUTES, (compileOptions & SH_MAP_LONG_VARIABLE_NAMES) != 0);
                   LogMsg("END", "COMPILER", numCompiles, "ACTIVE ATTRIBS");
@@ -219,7 +228,8 @@ void usage()
         "       -s=c     : use CSS Shaders spec\n"
         "       -b=e     : output GLSL ES code (this is by default)\n"
         "       -b=g     : output GLSL code\n"
-        "       -b=h     : output HLSL code\n"
+        "       -b=h9    : output HLSL9 code\n"
+        "       -b=h11   : output HLSL11 code\n"
         "       -x=i     : enable GL_OES_EGL_image_external\n"
         "       -x=d     : enable GL_OES_EGL_standard_derivatives\n"
         "       -x=r     : enable ARB_texture_rectangle\n");
@@ -295,15 +305,17 @@ void PrintActiveVariables(ShHandle compiler, ShShaderInfo varType, bool mapLongV
     size_t activeVars = 0;
     int size = 0;
     ShDataType type = SH_NONE;
+    ShPrecisionType precision = SH_PRECISION_UNDEFINED;
+    int staticUse = 0;
     const char* typeName = NULL;
     ShGetInfo(compiler, varType, &activeVars);
     for (size_t i = 0; i < activeVars; ++i) {
         switch (varType) {
             case SH_ACTIVE_ATTRIBUTES:
-                ShGetActiveAttrib(compiler, i, NULL, &size, &type, name, mappedName);
+                ShGetVariableInfo(compiler, SH_ACTIVE_ATTRIBUTES, static_cast<int>(i), NULL, &size, &type, &precision, &staticUse, name, mappedName);
                 break;
             case SH_ACTIVE_UNIFORMS:
-                ShGetActiveUniform(compiler, i, NULL, &size, &type, name, mappedName);
+                ShGetVariableInfo(compiler, SH_ACTIVE_UNIFORMS, static_cast<int>(i), NULL, &size, &type, &precision, &staticUse, name, mappedName);
                 break;
             default: assert(0);
         }
@@ -328,7 +340,7 @@ void PrintActiveVariables(ShHandle compiler, ShShaderInfo varType, bool mapLongV
             case SH_SAMPLER_EXTERNAL_OES: typeName = "GL_SAMPLER_EXTERNAL_OES"; break;
             default: assert(0);
         }
-        printf("%d: name:%s type:%s size:%d", i, name, typeName, size);
+        printf("%u: name:%s type:%s size:%d", i, name, typeName, size);
         if (mapLongVariableNames)
             printf(" mapped name:%s", mappedName);
         printf("\n");
@@ -357,7 +369,7 @@ static bool ReadShaderSource(const char* fileName, ShaderSource& source) {
     // string is added to vector.
     do {
         char* data = new char[len + 1];
-        int nread = fread(data, 1, len, in);
+        int nread = static_cast<int>(fread(data, 1, len, in));
         data[nread] = '\0';
         source.push_back(data);
 
