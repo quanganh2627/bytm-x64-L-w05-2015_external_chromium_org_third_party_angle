@@ -22,61 +22,61 @@ LOCAL_GENERATED_SOURCES :=
 GYP_COPIED_SOURCE_ORIGIN_DIRS :=
 
 LOCAL_SRC_FILES := \
-	third_party/angle/src/compiler/translator/TranslatorESSL.cpp \
-	third_party/angle/src/compiler/translator/ForLoopUnroll.cpp \
-	third_party/angle/src/compiler/translator/Diagnostics.cpp \
-	third_party/angle/src/compiler/translator/parseConst.cpp \
-	third_party/angle/src/compiler/translator/Initialize.cpp \
-	third_party/angle/src/compiler/translator/glslang_lex.cpp \
-	third_party/angle/src/compiler/translator/util.cpp \
-	third_party/angle/src/compiler/translator/DetectCallDepth.cpp \
-	third_party/angle/src/compiler/translator/DirectiveHandler.cpp \
-	third_party/angle/src/compiler/translator/UnfoldShortCircuitAST.cpp \
-	third_party/angle/src/compiler/translator/Intermediate.cpp \
-	third_party/angle/src/compiler/translator/UnfoldShortCircuit.cpp \
-	third_party/angle/src/compiler/translator/TranslatorHLSL.cpp \
-	third_party/angle/src/compiler/translator/Compiler.cpp \
-	third_party/angle/src/compiler/translator/PoolAlloc.cpp \
-	third_party/angle/src/compiler/translator/InfoSink.cpp \
-	third_party/angle/src/compiler/translator/DetectDiscontinuity.cpp \
-	third_party/angle/src/compiler/translator/glslang_tab.cpp \
-	third_party/angle/src/compiler/translator/IntermTraverse.cpp \
-	third_party/angle/src/compiler/translator/OutputGLSL.cpp \
-	third_party/angle/src/compiler/translator/InitializeDll.cpp \
-	third_party/angle/src/compiler/translator/compilerdebug.cpp \
-	third_party/angle/src/compiler/translator/OutputESSL.cpp \
-	third_party/angle/src/compiler/translator/CodeGen.cpp \
-	third_party/angle/src/compiler/translator/ossource_posix.cpp \
-	third_party/angle/src/compiler/translator/ValidateLimitations.cpp \
-	third_party/angle/src/compiler/translator/InitializeVariables.cpp \
-	third_party/angle/src/compiler/translator/RemoveTree.cpp \
-	third_party/angle/src/compiler/translator/MapLongVariableNames.cpp \
+	third_party/angle/src/common/RefCountObject.cpp \
+	third_party/angle/src/common/debug.cpp \
+	third_party/angle/src/common/event_tracer.cpp \
 	third_party/angle/src/compiler/translator/BuiltInFunctionEmulator.cpp \
-	third_party/angle/src/compiler/translator/RewriteElseBlocks.cpp \
-	third_party/angle/src/compiler/translator/QualifierAlive.cpp \
-	third_party/angle/src/compiler/translator/Uniform.cpp \
+	third_party/angle/src/compiler/translator/CodeGen.cpp \
+	third_party/angle/src/compiler/translator/Compiler.cpp \
+	third_party/angle/src/compiler/translator/DetectCallDepth.cpp \
+	third_party/angle/src/compiler/translator/DetectDiscontinuity.cpp \
+	third_party/angle/src/compiler/translator/Diagnostics.cpp \
+	third_party/angle/src/compiler/translator/DirectiveHandler.cpp \
+	third_party/angle/src/compiler/translator/ForLoopUnroll.cpp \
+	third_party/angle/src/compiler/translator/InfoSink.cpp \
+	third_party/angle/src/compiler/translator/Initialize.cpp \
+	third_party/angle/src/compiler/translator/InitializeDll.cpp \
 	third_party/angle/src/compiler/translator/InitializeParseContext.cpp \
-	third_party/angle/src/compiler/translator/ParseContext.cpp \
-	third_party/angle/src/compiler/translator/ShaderLang.cpp \
+	third_party/angle/src/compiler/translator/InitializeVariables.cpp \
+	third_party/angle/src/compiler/translator/IntermTraverse.cpp \
+	third_party/angle/src/compiler/translator/Intermediate.cpp \
+	third_party/angle/src/compiler/translator/MapLongVariableNames.cpp \
+	third_party/angle/src/compiler/translator/OutputESSL.cpp \
+	third_party/angle/src/compiler/translator/OutputGLSL.cpp \
+	third_party/angle/src/compiler/translator/OutputGLSLBase.cpp \
 	third_party/angle/src/compiler/translator/OutputHLSL.cpp \
+	third_party/angle/src/compiler/translator/ParseContext.cpp \
+	third_party/angle/src/compiler/translator/PoolAlloc.cpp \
+	third_party/angle/src/compiler/translator/QualifierAlive.cpp \
+	third_party/angle/src/compiler/translator/RemoveTree.cpp \
+	third_party/angle/src/compiler/translator/RewriteElseBlocks.cpp \
 	third_party/angle/src/compiler/translator/SearchSymbol.cpp \
+	third_party/angle/src/compiler/translator/ShaderLang.cpp \
 	third_party/angle/src/compiler/translator/SymbolTable.cpp \
+	third_party/angle/src/compiler/translator/TranslatorESSL.cpp \
 	third_party/angle/src/compiler/translator/TranslatorGLSL.cpp \
-	third_party/angle/src/compiler/translator/VersionGLSL.cpp \
-	third_party/angle/src/compiler/translator/intermOut.cpp \
+	third_party/angle/src/compiler/translator/TranslatorHLSL.cpp \
+	third_party/angle/src/compiler/translator/UnfoldShortCircuit.cpp \
+	third_party/angle/src/compiler/translator/UnfoldShortCircuitAST.cpp \
+	third_party/angle/src/compiler/translator/Uniform.cpp \
+	third_party/angle/src/compiler/translator/ValidateLimitations.cpp \
 	third_party/angle/src/compiler/translator/VariableInfo.cpp \
 	third_party/angle/src/compiler/translator/VariablePacker.cpp \
-	third_party/angle/src/compiler/translator/OutputGLSLBase.cpp \
+	third_party/angle/src/compiler/translator/VersionGLSL.cpp \
+	third_party/angle/src/compiler/translator/compilerdebug.cpp \
+	third_party/angle/src/compiler/translator/depgraph/DependencyGraph.cpp \
 	third_party/angle/src/compiler/translator/depgraph/DependencyGraphBuilder.cpp \
 	third_party/angle/src/compiler/translator/depgraph/DependencyGraphOutput.cpp \
-	third_party/angle/src/compiler/translator/depgraph/DependencyGraph.cpp \
 	third_party/angle/src/compiler/translator/depgraph/DependencyGraphTraverse.cpp \
+	third_party/angle/src/compiler/translator/glslang_lex.cpp \
+	third_party/angle/src/compiler/translator/glslang_tab.cpp \
+	third_party/angle/src/compiler/translator/intermOut.cpp \
+	third_party/angle/src/compiler/translator/ossource_posix.cpp \
+	third_party/angle/src/compiler/translator/parseConst.cpp \
 	third_party/angle/src/compiler/translator/timing/RestrictFragmentShaderTiming.cpp \
 	third_party/angle/src/compiler/translator/timing/RestrictVertexShaderTiming.cpp \
-	third_party/angle/src/third_party/compiler/ArrayBoundsClamper.cpp \
-	third_party/angle/src/common/event_tracer.cpp \
-	third_party/angle/src/common/RefCountObject.cpp \
-	third_party/angle/src/common/debug.cpp
+	third_party/angle/src/compiler/translator/util.cpp \
+	third_party/angle/src/third_party/compiler/ArrayBoundsClamper.cpp
 
 
 # Flags passed to both C and C++ files.
