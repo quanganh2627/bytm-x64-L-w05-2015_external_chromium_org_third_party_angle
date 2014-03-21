@@ -41,7 +41,6 @@ LOCAL_SRC_FILES := \
 	third_party/angle/src/compiler/translator/IntermTraverse.cpp \
 	third_party/angle/src/compiler/translator/Intermediate.cpp \
 	third_party/angle/src/compiler/translator/LoopInfo.cpp \
-	third_party/angle/src/compiler/translator/MapLongVariableNames.cpp \
 	third_party/angle/src/compiler/translator/OutputESSL.cpp \
 	third_party/angle/src/compiler/translator/OutputGLSL.cpp \
 	third_party/angle/src/compiler/translator/OutputGLSLBase.cpp \
@@ -130,7 +129,6 @@ MY_DEFS_Debug := \
 	'-DUSE_LIBJPEG_TURBO=1' \
 	'-DUSE_PROPRIETARY_CODECS' \
 	'-DENABLE_CONFIGURATION_POLICY' \
-	'-DENABLE_NEW_GAMEPAD_API=1' \
 	'-DDISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY' \
 	'-DSYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE' \
 	'-DENABLE_EGLIMAGE=1' \
@@ -219,7 +217,6 @@ MY_DEFS_Release := \
 	'-DUSE_LIBJPEG_TURBO=1' \
 	'-DUSE_PROPRIETARY_CODECS' \
 	'-DENABLE_CONFIGURATION_POLICY' \
-	'-DENABLE_NEW_GAMEPAD_API=1' \
 	'-DDISCARDABLE_MEMORY_ALWAYS_SUPPORTED_NATIVELY' \
 	'-DSYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE' \
 	'-DENABLE_EGLIMAGE=1' \

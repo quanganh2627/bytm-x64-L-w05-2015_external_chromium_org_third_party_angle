@@ -20,7 +20,7 @@ $(gyp_shared_intermediate_dir)/commit.h: gyp_shared_intermediate_dir := $(abspat
 $(gyp_shared_intermediate_dir)/commit.h: export PATH := $(subst $(ANDROID_BUILD_PATHS),,$(PATH))
 $(gyp_shared_intermediate_dir)/commit.h: $(LOCAL_PATH)/third_party/angle/src/commit_id.py $(GYP_TARGET_DEPENDENCIES)
 	@echo "Gyp action: Generating commit ID header... ($@)"
-	$(hide)cd $(gyp_local_path)/third_party/angle/src; mkdir -p $(gyp_shared_intermediate_dir); python commit_id.py "$(gyp_shared_intermediate_dir)/commit.h"
+	$(hide)cd $(gyp_local_path)/third_party/angle/src; mkdir -p $(gyp_shared_intermediate_dir); python ./commit_id.py "$(gyp_shared_intermediate_dir)/commit.h"
 
 
 
