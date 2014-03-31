@@ -3,7 +3,7 @@
 include $(CLEAR_VARS)
 
 LOCAL_MODULE_CLASS := STATIC_LIBRARIES
-LOCAL_MODULE := third_party_angle_src_translator_gyp
+LOCAL_MODULE := third_party_angle_src_preprocessor_gyp
 LOCAL_MODULE_SUFFIX := .a
 LOCAL_MODULE_TAGS := optional
 gyp_intermediate_dir := $(call local-intermediates-dir)
@@ -22,68 +22,23 @@ LOCAL_GENERATED_SOURCES :=
 GYP_COPIED_SOURCE_ORIGIN_DIRS :=
 
 LOCAL_SRC_FILES := \
-	third_party/angle/src/common/RefCountObject.cpp \
-	third_party/angle/src/common/debug.cpp \
-	third_party/angle/src/common/event_tracer.cpp \
-	third_party/angle/src/compiler/translator/BuiltInFunctionEmulator.cpp \
-	third_party/angle/src/compiler/translator/CodeGen.cpp \
-	third_party/angle/src/compiler/translator/Compiler.cpp \
-	third_party/angle/src/compiler/translator/DetectCallDepth.cpp \
-	third_party/angle/src/compiler/translator/DetectDiscontinuity.cpp \
-	third_party/angle/src/compiler/translator/Diagnostics.cpp \
-	third_party/angle/src/compiler/translator/DirectiveHandler.cpp \
-	third_party/angle/src/compiler/translator/ForLoopUnroll.cpp \
-	third_party/angle/src/compiler/translator/InfoSink.cpp \
-	third_party/angle/src/compiler/translator/Initialize.cpp \
-	third_party/angle/src/compiler/translator/InitializeDll.cpp \
-	third_party/angle/src/compiler/translator/InitializeParseContext.cpp \
-	third_party/angle/src/compiler/translator/InitializeVariables.cpp \
-	third_party/angle/src/compiler/translator/IntermTraverse.cpp \
-	third_party/angle/src/compiler/translator/Intermediate.cpp \
-	third_party/angle/src/compiler/translator/LoopInfo.cpp \
-	third_party/angle/src/compiler/translator/OutputESSL.cpp \
-	third_party/angle/src/compiler/translator/OutputGLSL.cpp \
-	third_party/angle/src/compiler/translator/OutputGLSLBase.cpp \
-	third_party/angle/src/compiler/translator/OutputHLSL.cpp \
-	third_party/angle/src/compiler/translator/ParseContext.cpp \
-	third_party/angle/src/compiler/translator/PoolAlloc.cpp \
-	third_party/angle/src/compiler/translator/QualifierAlive.cpp \
-	third_party/angle/src/compiler/translator/RemoveTree.cpp \
-	third_party/angle/src/compiler/translator/RewriteElseBlocks.cpp \
-	third_party/angle/src/compiler/translator/SearchSymbol.cpp \
-	third_party/angle/src/compiler/translator/ShaderLang.cpp \
-	third_party/angle/src/compiler/translator/SymbolTable.cpp \
-	third_party/angle/src/compiler/translator/TranslatorESSL.cpp \
-	third_party/angle/src/compiler/translator/TranslatorGLSL.cpp \
-	third_party/angle/src/compiler/translator/TranslatorHLSL.cpp \
-	third_party/angle/src/compiler/translator/UnfoldShortCircuit.cpp \
-	third_party/angle/src/compiler/translator/UnfoldShortCircuitAST.cpp \
-	third_party/angle/src/compiler/translator/Uniform.cpp \
-	third_party/angle/src/compiler/translator/ValidateLimitations.cpp \
-	third_party/angle/src/compiler/translator/VariableInfo.cpp \
-	third_party/angle/src/compiler/translator/VariablePacker.cpp \
-	third_party/angle/src/compiler/translator/VersionGLSL.cpp \
-	third_party/angle/src/compiler/translator/compilerdebug.cpp \
-	third_party/angle/src/compiler/translator/depgraph/DependencyGraph.cpp \
-	third_party/angle/src/compiler/translator/depgraph/DependencyGraphBuilder.cpp \
-	third_party/angle/src/compiler/translator/depgraph/DependencyGraphOutput.cpp \
-	third_party/angle/src/compiler/translator/depgraph/DependencyGraphTraverse.cpp \
-	third_party/angle/src/compiler/translator/glslang_lex.cpp \
-	third_party/angle/src/compiler/translator/glslang_tab.cpp \
-	third_party/angle/src/compiler/translator/intermOut.cpp \
-	third_party/angle/src/compiler/translator/ossource_posix.cpp \
-	third_party/angle/src/compiler/translator/parseConst.cpp \
-	third_party/angle/src/compiler/translator/timing/RestrictFragmentShaderTiming.cpp \
-	third_party/angle/src/compiler/translator/timing/RestrictVertexShaderTiming.cpp \
-	third_party/angle/src/compiler/translator/util.cpp \
-	third_party/angle/src/third_party/compiler/ArrayBoundsClamper.cpp
+	third_party/angle/src/compiler/preprocessor/DiagnosticsBase.cpp \
+	third_party/angle/src/compiler/preprocessor/DirectiveHandlerBase.cpp \
+	third_party/angle/src/compiler/preprocessor/DirectiveParser.cpp \
+	third_party/angle/src/compiler/preprocessor/ExpressionParser.cpp \
+	third_party/angle/src/compiler/preprocessor/Input.cpp \
+	third_party/angle/src/compiler/preprocessor/Lexer.cpp \
+	third_party/angle/src/compiler/preprocessor/Macro.cpp \
+	third_party/angle/src/compiler/preprocessor/MacroExpander.cpp \
+	third_party/angle/src/compiler/preprocessor/Preprocessor.cpp \
+	third_party/angle/src/compiler/preprocessor/Token.cpp \
+	third_party/angle/src/compiler/preprocessor/Tokenizer.cpp
 
 
 # Flags passed to both C and C++ files.
 MY_CFLAGS_Debug := \
 	-fstack-protector \
 	--param=ssp-buffer-size=4 \
-	 \
 	-fno-exceptions \
 	-fno-strict-aliasing \
 	-Wno-unused-parameter \
@@ -91,9 +46,11 @@ MY_CFLAGS_Debug := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-Wno-unused-local-typedefs \
 	-Wno-format \
-	-EL \
-	-mhard-float \
+	-m64 \
+	-march=x86-64 \
+	-fuse-ld=gold \
 	-ffunction-sections \
 	-funwind-tables \
 	-g \
@@ -134,7 +91,6 @@ MY_DEFS_Debug := \
 	'-DCLD_VERSION=1' \
 	'-DENABLE_PRINTING=1' \
 	'-DENABLE_MANAGED_USERS=1' \
-	'-DANGLE_TRANSLATOR_IMPLEMENTATION' \
 	'-DUSE_OPENSSL=1' \
 	'-DUSE_OPENSSL_CERTS=1' \
 	'-DANDROID' \
@@ -149,8 +105,6 @@ MY_DEFS_Debug := \
 
 # Include paths placed before CFLAGS/CPPFLAGS
 LOCAL_C_INCLUDES_Debug := \
-	$(LOCAL_PATH)/third_party/angle/src \
-	$(LOCAL_PATH)/third_party/angle/include \
 	$(PWD)/frameworks/wilhelm/include \
 	$(PWD)/bionic \
 	$(PWD)/external/stlport/stlport
@@ -162,7 +116,6 @@ LOCAL_CPPFLAGS_Debug := \
 	-fno-threadsafe-statics \
 	-fvisibility-inlines-hidden \
 	-Wno-deprecated \
-	-Wno-uninitialized \
 	-Wno-non-virtual-dtor \
 	-Wno-sign-promo \
 	-Wno-non-virtual-dtor
@@ -172,7 +125,6 @@ LOCAL_CPPFLAGS_Debug := \
 MY_CFLAGS_Release := \
 	-fstack-protector \
 	--param=ssp-buffer-size=4 \
-	 \
 	-fno-exceptions \
 	-fno-strict-aliasing \
 	-Wno-unused-parameter \
@@ -180,9 +132,11 @@ MY_CFLAGS_Release := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-Wno-unused-local-typedefs \
 	-Wno-format \
-	-EL \
-	-mhard-float \
+	-m64 \
+	-march=x86-64 \
+	-fuse-ld=gold \
 	-ffunction-sections \
 	-funwind-tables \
 	-g \
@@ -223,7 +177,6 @@ MY_DEFS_Release := \
 	'-DCLD_VERSION=1' \
 	'-DENABLE_PRINTING=1' \
 	'-DENABLE_MANAGED_USERS=1' \
-	'-DANGLE_TRANSLATOR_IMPLEMENTATION' \
 	'-DUSE_OPENSSL=1' \
 	'-DUSE_OPENSSL_CERTS=1' \
 	'-DANDROID' \
@@ -238,8 +191,6 @@ MY_DEFS_Release := \
 
 # Include paths placed before CFLAGS/CPPFLAGS
 LOCAL_C_INCLUDES_Release := \
-	$(LOCAL_PATH)/third_party/angle/src \
-	$(LOCAL_PATH)/third_party/angle/include \
 	$(PWD)/frameworks/wilhelm/include \
 	$(PWD)/bionic \
 	$(PWD)/external/stlport/stlport
@@ -251,7 +202,6 @@ LOCAL_CPPFLAGS_Release := \
 	-fno-threadsafe-statics \
 	-fvisibility-inlines-hidden \
 	-Wno-deprecated \
-	-Wno-uninitialized \
 	-Wno-non-virtual-dtor \
 	-Wno-sign-promo \
 	-Wno-non-virtual-dtor
@@ -269,8 +219,8 @@ LOCAL_LDFLAGS_Debug := \
 	-Wl,-z,relro \
 	-Wl,-z,noexecstack \
 	-fPIC \
-	-EL \
-	-Wl,--no-keep-memory \
+	-m64 \
+	-fuse-ld=gold \
 	-nostdlib \
 	-Wl,--no-undefined \
 	-Wl,--exclude-libs=ALL \
@@ -286,8 +236,8 @@ LOCAL_LDFLAGS_Release := \
 	-Wl,-z,relro \
 	-Wl,-z,noexecstack \
 	-fPIC \
-	-EL \
-	-Wl,--no-keep-memory \
+	-m64 \
+	-fuse-ld=gold \
 	-nostdlib \
 	-Wl,--no-undefined \
 	-Wl,--exclude-libs=ALL \
@@ -310,10 +260,10 @@ LOCAL_SHARED_LIBRARIES := \
 
 # Add target alias to "gyp_all_modules" target.
 .PHONY: gyp_all_modules
-gyp_all_modules: third_party_angle_src_translator_gyp
+gyp_all_modules: third_party_angle_src_preprocessor_gyp
 
 # Alias gyp target name.
-.PHONY: translator
-translator: third_party_angle_src_translator_gyp
+.PHONY: preprocessor
+preprocessor: third_party_angle_src_preprocessor_gyp
 
 include $(BUILD_STATIC_LIBRARY)

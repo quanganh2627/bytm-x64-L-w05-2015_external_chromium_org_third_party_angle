@@ -83,7 +83,6 @@ LOCAL_SRC_FILES := \
 MY_CFLAGS_Debug := \
 	-fstack-protector \
 	--param=ssp-buffer-size=4 \
-	 \
 	-fno-exceptions \
 	-fno-strict-aliasing \
 	-Wno-unused-parameter \
@@ -91,9 +90,11 @@ MY_CFLAGS_Debug := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-Wno-unused-local-typedefs \
 	-Wno-format \
-	-EL \
-	-mhard-float \
+	-m64 \
+	-march=x86-64 \
+	-fuse-ld=gold \
 	-ffunction-sections \
 	-funwind-tables \
 	-g \
@@ -162,7 +163,6 @@ LOCAL_CPPFLAGS_Debug := \
 	-fno-threadsafe-statics \
 	-fvisibility-inlines-hidden \
 	-Wno-deprecated \
-	-Wno-uninitialized \
 	-Wno-non-virtual-dtor \
 	-Wno-sign-promo \
 	-Wno-non-virtual-dtor
@@ -172,7 +172,6 @@ LOCAL_CPPFLAGS_Debug := \
 MY_CFLAGS_Release := \
 	-fstack-protector \
 	--param=ssp-buffer-size=4 \
-	 \
 	-fno-exceptions \
 	-fno-strict-aliasing \
 	-Wno-unused-parameter \
@@ -180,9 +179,11 @@ MY_CFLAGS_Release := \
 	-fvisibility=hidden \
 	-pipe \
 	-fPIC \
+	-Wno-unused-local-typedefs \
 	-Wno-format \
-	-EL \
-	-mhard-float \
+	-m64 \
+	-march=x86-64 \
+	-fuse-ld=gold \
 	-ffunction-sections \
 	-funwind-tables \
 	-g \
@@ -251,7 +252,6 @@ LOCAL_CPPFLAGS_Release := \
 	-fno-threadsafe-statics \
 	-fvisibility-inlines-hidden \
 	-Wno-deprecated \
-	-Wno-uninitialized \
 	-Wno-non-virtual-dtor \
 	-Wno-sign-promo \
 	-Wno-non-virtual-dtor
@@ -269,8 +269,8 @@ LOCAL_LDFLAGS_Debug := \
 	-Wl,-z,relro \
 	-Wl,-z,noexecstack \
 	-fPIC \
-	-EL \
-	-Wl,--no-keep-memory \
+	-m64 \
+	-fuse-ld=gold \
 	-nostdlib \
 	-Wl,--no-undefined \
 	-Wl,--exclude-libs=ALL \
@@ -286,8 +286,8 @@ LOCAL_LDFLAGS_Release := \
 	-Wl,-z,relro \
 	-Wl,-z,noexecstack \
 	-fPIC \
-	-EL \
-	-Wl,--no-keep-memory \
+	-m64 \
+	-fuse-ld=gold \
 	-nostdlib \
 	-Wl,--no-undefined \
 	-Wl,--exclude-libs=ALL \
