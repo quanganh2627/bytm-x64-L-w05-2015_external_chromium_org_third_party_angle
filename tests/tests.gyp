@@ -3,15 +3,12 @@
 # found in the LICENSE file.
 
 {
-    'variables':
-    {
-        'angle_build_scripts_path': '..',
-    },
     'targets':
     [
         {
             'target_name': 'gtest',
             'type': 'static_library',
+            'includes': [ '../build/common_defines.gypi', ],
             'include_dirs':
             [
                 'third_party/googletest',
@@ -37,6 +34,7 @@
         {
             'target_name': 'gmock',
             'type': 'static_library',
+            'includes': [ '../build/common_defines.gypi', ],
             'include_dirs':
             [
                 'third_party/googlemock',
@@ -75,9 +73,14 @@
                 'third_party/googletest/include',
                 'third_party/googlemock/include',
             ],
+            'includes':
+            [
+                '../build/common_defines.gypi',
+                'preprocessor_tests/preprocessor_tests.gypi',
+            ],
             'sources':
             [
-                '<!@(python <(angle_build_scripts_path)/enumerate_files.py preprocessor_tests -types *.cpp *.h)'
+                'preprocessor_tests/preprocessor_test_main.cpp',
             ],
         },
 
@@ -88,19 +91,74 @@
             [
                 '../src/angle.gyp:translator_static',
                 'gtest',
-                'gmock',
             ],
             'include_dirs':
             [
                 '../include',
                 '../src',
                 'third_party/googletest/include',
-                'third_party/googlemock/include',
+            ],
+            'includes':
+            [
+                '../build/common_defines.gypi',
+                'compiler_tests/compiler_tests.gypi',
             ],
             'sources':
             [
-                '<!@(python <(angle_build_scripts_path)/enumerate_files.py compiler_tests -types *.cpp *.h)'
+                'compiler_tests/compiler_test_main.cpp',
             ],
         },
+    ],
+
+    'conditions':
+    [
+        ['OS=="win"',
+        {
+            'targets':
+            [
+                {
+                    'target_name': 'angle_tests',
+                    'type': 'executable',
+                    'includes': [ '../build/common_defines.gypi', ],
+                    'dependencies':
+                    [
+                        '../src/angle.gyp:libGLESv2',
+                        '../src/angle.gyp:libEGL',
+                        'gtest',
+                    ],
+                    'include_dirs':
+                    [
+                        '../include',
+                        'angle_tests',
+                        'third_party/googletest/include',
+                    ],
+                    'sources':
+                    [
+                        '<!@(python <(angle_path)/enumerate_files.py angle_tests -types *.cpp *.h *.inl)'
+                    ],
+                },
+                {
+                    'target_name': 'standalone_tests',
+                    'type': 'executable',
+                    'includes': [ '../build/common_defines.gypi', ],
+                    'dependencies':
+                    [
+                        'gtest',
+                        'gmock',
+                    ],
+                    'include_dirs':
+                    [
+                        '../include',
+                        'angle_tests',
+                        'third_party/googletest/include',
+                        'third_party/googlemock/include',
+                    ],
+                    'sources':
+                    [
+                        '<!@(python <(angle_path)/enumerate_files.py standalone_tests -types *.cpp *.h)'
+                    ],
+                },
+            ],
+        }],
     ],
 }

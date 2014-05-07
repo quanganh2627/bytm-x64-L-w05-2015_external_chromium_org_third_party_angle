@@ -3,11 +3,16 @@
 # found in the LICENSE file.
 
 {
+    'variables':
+    {
+        'angle_enable_d3d9%': 1,
+        'angle_enable_d3d11%': 1,
+    },
     'target_defaults':
     {
         'defines':
         [
-          'ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ TEXT("d3dcompiler_46.dll"), TEXT("d3dcompiler_43.dll") }',
+            'ANGLE_PRELOADED_D3DCOMPILER_MODULE_NAMES={ TEXT("d3dcompiler_46.dll"), TEXT("d3dcompiler_43.dll") }',
         ],
     },
 
@@ -21,31 +26,70 @@
                     'target_name': 'libGLESv2',
                     'type': 'shared_library',
                     'dependencies': [ 'translator', 'commit_id', 'copy_compiler_dll' ],
+                    'includes': [ '../build/common_defines.gypi', ],
                     'include_dirs':
                     [
                         '.',
                         '../include',
                         'libGLESv2',
-                        '<(SHARED_INTERMEDIATE_DIR)',
                     ],
                     'sources':
                     [
-                        '<!@(python <(angle_build_scripts_path)/enumerate_files.py \
+                        '<!@(python <(angle_path)/enumerate_files.py \
                              -dirs common libGLESv2 third_party/murmurhash ../include \
-                             -types *.cpp *.h *.hlsl *.vs *.ps *.bat *.def *.rc)',
+                             -types *.cpp *.h *.hlsl *.vs *.ps *.bat *.def *.rc \
+                             -excludes */d3d/* */d3d9/* */d3d11/*)',
                     ],
-                    'msvs_disabled_warnings': [ 4267 ],
-                    'msvs_settings':
-                    {
-                        'VCLinkerTool':
+                    'conditions':
+                    [
+                        ['angle_enable_d3d9==1',
                         {
-                            'AdditionalDependencies':
+                            'sources':
                             [
-                                'd3d9.lib',
-                                'dxguid.lib',
-                            ]
-                        }
-                    },
+                                '<!@(python <(angle_path)/enumerate_files.py \
+                                     -dirs libGLESv2/renderer/d3d libGLESv2/renderer/d3d9 \
+                                     -types *.cpp *.h *.vs *.ps *.bat)',
+                            ],
+                            'defines':
+                            [
+                                'ANGLE_ENABLE_D3D9',
+                            ],
+                            'msvs_settings':
+                            {
+                                'VCLinkerTool':
+                                {
+                                    'AdditionalDependencies':
+                                    [
+                                        'd3d9.lib',
+                                    ]
+                                }
+                            },
+                        }],
+                        ['angle_enable_d3d11==1',
+                        {
+                            'sources':
+                            [
+                                '<!@(python <(angle_path)/enumerate_files.py \
+                                     -dirs libGLESv2/renderer/d3d libGLESv2/renderer/d3d11 \
+                                     -types *.cpp *.h *.hlsl *.bat)',
+                            ],
+                            'defines':
+                            [
+                                'ANGLE_ENABLE_D3D11',
+                            ],
+                            'msvs_settings':
+                            {
+                                'VCLinkerTool':
+                                {
+                                    'AdditionalDependencies':
+                                    [
+                                        'dxguid.lib',
+                                    ],
+                                },
+                            },
+                        }],
+                    ],
+
                     'configurations':
                     {
                         'Debug':
@@ -54,6 +98,16 @@
                             [
                                 'ANGLE_ENABLE_PERF',
                             ],
+                            'msvs_settings':
+                            {
+                                'VCLinkerTool':
+                                {
+                                    'AdditionalDependencies':
+                                    [
+                                        'd3d9.lib',
+                                    ]
+                                }
+                            },
                         },
                     },
                 },
