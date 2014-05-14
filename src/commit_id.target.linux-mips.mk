@@ -12,16 +12,18 @@ gyp_intermediate_dir := $(call local-intermediates-dir,,$(GYP_VAR_PREFIX))
 gyp_shared_intermediate_dir := $(call intermediates-dir-for,GYP,shared,,,$(GYP_VAR_PREFIX))
 
 # Make sure our deps are built first.
-GYP_TARGET_DEPENDENCIES :=
+GYP_TARGET_DEPENDENCIES := \
+	$(call intermediates-dir-for,GYP,third_party_angle_src_copy_scripts_gyp,,,$(GYP_VAR_PREFIX))/copy_scripts.stamp
 
 ### Rules for action "Generate Commit ID Header":
 $(gyp_shared_intermediate_dir)/commit.h: gyp_local_path := $(LOCAL_PATH)
+$(gyp_shared_intermediate_dir)/commit.h: gyp_var_prefix := $(GYP_VAR_PREFIX)
 $(gyp_shared_intermediate_dir)/commit.h: gyp_intermediate_dir := $(abspath $(gyp_intermediate_dir))
 $(gyp_shared_intermediate_dir)/commit.h: gyp_shared_intermediate_dir := $(abspath $(gyp_shared_intermediate_dir))
 $(gyp_shared_intermediate_dir)/commit.h: export PATH := $(subst $(ANDROID_BUILD_PATHS),,$(PATH))
-$(gyp_shared_intermediate_dir)/commit.h: $(LOCAL_PATH)/third_party/angle/src/commit_id.py $(GYP_TARGET_DEPENDENCIES)
+$(gyp_shared_intermediate_dir)/commit.h: $(gyp_shared_intermediate_dir)/commit_id.py $(LOCAL_PATH)/third_party/angle/.git/index $(GYP_TARGET_DEPENDENCIES)
 	@echo "Gyp action: Generating commit ID header... ($@)"
-	$(hide)cd $(gyp_local_path)/third_party/angle/src; mkdir -p $(gyp_shared_intermediate_dir); python ./commit_id.py "$(gyp_shared_intermediate_dir)/commit.h"
+	$(hide)cd $(gyp_local_path)/third_party/angle/src; mkdir -p $(gyp_shared_intermediate_dir); python "$(gyp_shared_intermediate_dir)/commit_id.py" "$(gyp_shared_intermediate_dir)/commit.h"
 
 
 
