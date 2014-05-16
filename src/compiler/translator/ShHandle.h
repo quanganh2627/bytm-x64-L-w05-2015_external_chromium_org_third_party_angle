@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -13,6 +13,8 @@
 //
 // This should not be included by driver code.
 //
+
+#include "GLSLANG/ShaderLang.h"
 
 #include "compiler/translator/BuiltInFunctionEmulator.h"
 #include "compiler/translator/ExtensionBehavior.h"
@@ -30,7 +32,7 @@ class TranslatorHLSL;
 // Helper function to identify specs that are based on the WebGL spec,
 // like the CSS Shaders spec.
 //
-bool IsWebGLBasedSpec(ShShaderSpec spec);
+bool isWebGLBasedSpec(ShShaderSpec spec);
 
 //
 // The base class used to back handles returned to the driver.
@@ -64,7 +66,6 @@ public:
                  int compileOptions);
 
     // Get results of the last compilation.
-    int getShaderVersion() const { return shaderVersion; }
     TInfoSink& getInfoSink() { return infoSink; }
     const TVariableInfoList& getAttribs() const { return attribs; }
     const TVariableInfoList& getUniforms() const { return uniforms; }
@@ -73,18 +74,16 @@ public:
     ShHashFunction64 getHashFunction() const { return hashFunction; }
     NameMap& getNameMap() { return nameMap; }
     TSymbolTable& getSymbolTable() { return symbolTable; }
-    ShShaderSpec getShaderSpec() const { return shaderSpec; }
 
 protected:
     ShShaderType getShaderType() const { return shaderType; }
+    ShShaderSpec getShaderSpec() const { return shaderSpec; }
     // Initialize symbol-table with built-in symbols.
     bool InitBuiltInSymbolTable(const ShBuiltInResources& resources);
     // Clears the results from the previous compilation.
     void clearResults();
     // Return true if function recursion is detected or call depth exceeded.
     bool detectCallDepth(TIntermNode* root, TInfoSink& infoSink, bool limitCallStackDepth);
-    // Returns true if a program has no conflicting or missing fragment outputs
-    bool validateOutputs(TIntermNode* root);
     // Rewrites a shader's intermediate tree according to the CSS Shaders spec.
     void rewriteCSSShader(TIntermNode* root);
     // Returns true if the given shader does not exceed the minimum
@@ -114,7 +113,7 @@ protected:
     // Returns true if the shader does not use sampler dependent values to affect control 
     // flow or in operations whose time can depend on the input values.
     bool enforceFragmentShaderTimingRestrictions(const TDependencyGraph& graph);
-    // Return true if the maximum expression complexity is below the limit.
+    // Return true if the maximum expression complexity below the limit.
     bool limitExpressionComplexity(TIntermNode* root);
     // Get built-in extensions with default behavior.
     const TExtensionBehavior& getExtensionBehavior() const;
@@ -147,7 +146,6 @@ private:
     BuiltInFunctionEmulator builtInFunctionEmulator;
 
     // Results of compilation.
-    int shaderVersion;
     TInfoSink infoSink;  // Output sink.
     TVariableInfoList attribs;  // Active attributes in the compiled shader.
     TVariableInfoList uniforms;  // Active uniforms in the compiled shader.

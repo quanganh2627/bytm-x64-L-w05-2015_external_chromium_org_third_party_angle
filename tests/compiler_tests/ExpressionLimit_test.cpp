@@ -22,7 +22,6 @@ protected:
     virtual void SetUp()
     {
         memset(&resources, 0, sizeof(resources));
-
         GenerateResources(&resources);
     }
 

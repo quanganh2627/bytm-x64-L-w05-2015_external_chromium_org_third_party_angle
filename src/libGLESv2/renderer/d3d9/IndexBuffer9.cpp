@@ -23,12 +23,20 @@ IndexBuffer9::IndexBuffer9(Renderer9 *const renderer) : mRenderer(renderer)
 
 IndexBuffer9::~IndexBuffer9()
 {
-    SafeRelease(mIndexBuffer);
+    if (mIndexBuffer)
+    {
+        mIndexBuffer->Release();
+        mIndexBuffer = NULL;
+    }
 }
 
 bool IndexBuffer9::initialize(unsigned int bufferSize, GLenum indexType, bool dynamic)
 {
-    SafeRelease(mIndexBuffer);
+    if (mIndexBuffer)
+    {
+        mIndexBuffer->Release();
+        mIndexBuffer = NULL;
+    }
 
     updateSerial();
 

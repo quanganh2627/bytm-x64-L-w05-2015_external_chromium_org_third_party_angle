@@ -16,15 +16,12 @@
     <ClCompile Include="..\..\src\compiler\preprocessor\Input.cpp">
       <Filter>compiler\preprocessor</Filter>
     </ClCompile>
-    <None Include="..\..\src\compiler\preprocessor\ExpressionParser.y">
+    <ClInclude Include="..\..\src\compiler\preprocessor\length_limits.h">
       <Filter>compiler\preprocessor</Filter>
-    </None>
+    </ClInclude>
     <ClCompile Include="..\..\src\compiler\preprocessor\Tokenizer.cpp">
       <Filter>compiler\preprocessor</Filter>
     </ClCompile>
-    <None Include="..\..\src\compiler\preprocessor\Tokenizer.l">
-      <Filter>compiler\preprocessor</Filter>
-    </None>
     <ClInclude Include="..\..\src\compiler\preprocessor\Tokenizer.h">
       <Filter>compiler\preprocessor</Filter>
     </ClInclude>

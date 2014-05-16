@@ -20,10 +20,5 @@ void TranslatorHLSL::translate(TIntermNode *root)
     sh::OutputHLSL outputHLSL(parseContext, getResources(), mOutputType);
 
     outputHLSL.output();
-
-    mActiveUniforms         = outputHLSL.getUniforms();
-    mActiveInterfaceBlocks  = outputHLSL.getInterfaceBlocks();
-    mActiveOutputVariables  = outputHLSL.getOutputVariables();
-    mActiveAttributes       = outputHLSL.getAttributes();
-    mActiveVaryings         = outputHLSL.getVaryings();
+    mActiveUniforms = outputHLSL.getUniforms();
 }

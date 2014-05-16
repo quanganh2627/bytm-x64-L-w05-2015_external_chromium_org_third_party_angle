@@ -7,6 +7,7 @@
 #ifndef COMPILER_VARIABLE_INFO_H_
 #define COMPILER_VARIABLE_INFO_H_
 
+#include "GLSLANG/ShaderLang.h"
 #include "compiler/translator/intermediate.h"
 
 // Provides information about a variable.

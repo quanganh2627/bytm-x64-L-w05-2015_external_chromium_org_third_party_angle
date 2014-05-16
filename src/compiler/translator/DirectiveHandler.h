@@ -17,8 +17,7 @@ class TDirectiveHandler : public pp::DirectiveHandler
 {
   public:
     TDirectiveHandler(TExtensionBehavior& extBehavior,
-                      TDiagnostics& diagnostics,
-                      int& shaderVersion);
+                      TDiagnostics& diagnostics);
     virtual ~TDirectiveHandler();
 
     const TPragma& pragma() const { return mPragma; }
@@ -42,7 +41,6 @@ class TDirectiveHandler : public pp::DirectiveHandler
     TPragma mPragma;
     TExtensionBehavior& mExtensionBehavior;
     TDiagnostics& mDiagnostics;
-    int& mShaderVersion;
 };
 
 #endif  // COMPILER_DIRECTIVE_HANDLER_H_

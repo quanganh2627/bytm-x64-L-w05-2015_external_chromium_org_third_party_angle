@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2011 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -43,16 +43,14 @@ TOutputGLSLBase::TOutputGLSLBase(TInfoSinkBase& objSink,
                                  ShArrayIndexClampingStrategy clampingStrategy,
                                  ShHashFunction64 hashFunction,
                                  NameMap& nameMap,
-                                 TSymbolTable& symbolTable,
-                                 int shaderVersion)
+                                 TSymbolTable& symbolTable)
     : TIntermTraverser(true, true, true),
       mObjSink(objSink),
       mDeclaringVariables(false),
       mClampingStrategy(clampingStrategy),
       mHashFunction(hashFunction),
       mNameMap(nameMap),
-      mSymbolTable(symbolTable),
-      mShaderVersion(shaderVersion)
+      mSymbolTable(symbolTable)
 {
 }
 
@@ -258,7 +256,7 @@ bool TOutputGLSLBase::visitBinary(Visit visit, TIntermBinary* node)
                 const TField* field = structure->fields()[index->getIConst(0)];
 
                 TString fieldName = field->name();
-                if (!mSymbolTable.findBuiltIn(structure->name(), mShaderVersion))
+                if (!mSymbolTable.findBuiltIn(structure->name()))
                     fieldName = hashName(fieldName);
 
                 out << fieldName;
@@ -792,7 +790,7 @@ TString TOutputGLSLBase::hashName(const TString& name)
 
 TString TOutputGLSLBase::hashVariableName(const TString& name)
 {
-    if (mSymbolTable.findBuiltIn(name, mShaderVersion) != NULL)
+    if (mSymbolTable.findBuiltIn(name) != NULL)
         return name;
     return hashName(name);
 }
@@ -800,8 +798,7 @@ TString TOutputGLSLBase::hashVariableName(const TString& name)
 TString TOutputGLSLBase::hashFunctionName(const TString& mangled_name)
 {
     TString name = TFunction::unmangleName(mangled_name);
-    if (mSymbolTable.findBuiltIn(mangled_name, mShaderVersion) != NULL || name == "main")
-    {
+    if (mSymbolTable.findBuiltIn(mangled_name) != NULL || name == "main") {
         return translateTextureFunction(name);
     }
     return hashName(name);

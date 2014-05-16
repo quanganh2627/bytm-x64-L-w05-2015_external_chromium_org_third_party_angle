@@ -22,12 +22,20 @@ IndexBuffer11::IndexBuffer11(Renderer11 *const renderer) : mRenderer(renderer)
 
 IndexBuffer11::~IndexBuffer11()
 {
-    SafeRelease(mBuffer);
+    if (mBuffer)
+    {
+        mBuffer->Release();
+        mBuffer = NULL;
+    }
 }
 
 bool IndexBuffer11::initialize(unsigned int bufferSize, GLenum indexType, bool dynamic)
 {
-    SafeRelease(mBuffer);
+    if (mBuffer)
+    {
+        mBuffer->Release();
+        mBuffer = NULL;
+    }
 
     updateSerial();
 

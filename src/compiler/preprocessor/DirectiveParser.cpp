@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2011-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2011 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -708,9 +708,7 @@ void DirectiveParser::parseVersion(Token* token)
 
     enum State
     {
-        VERSION_NUMBER,
-        VERSION_PROFILE,
-        VERSION_ENDLINE
+        VERSION_NUMBER
     };
 
     bool valid = true;
@@ -718,12 +716,12 @@ void DirectiveParser::parseVersion(Token* token)
     int state = VERSION_NUMBER;
 
     mTokenizer->lex(token);
-    while (valid && (token->type != '\n') && (token->type != Token::LAST))
+    while ((token->type != '\n') && (token->type != Token::LAST))
     {
-        switch (state)
+        switch (state++)
         {
           case VERSION_NUMBER:
-            if (token->type != Token::CONST_INT)
+            if (valid && (token->type != Token::CONST_INT))
             {
                 mDiagnostics->report(Diagnostics::PP_INVALID_VERSION_NUMBER,
                                      token->location, token->text);
@@ -735,41 +733,26 @@ void DirectiveParser::parseVersion(Token* token)
                                      token->location, token->text);
                 valid = false;
             }
+            break;
+          default:
             if (valid)
             {
-                state = (version < 300) ? VERSION_ENDLINE : VERSION_PROFILE;
-            }
-            break;
-          case VERSION_PROFILE:
-            if (token->type != Token::IDENTIFIER || token->text != "es")
-            {
-                mDiagnostics->report(Diagnostics::PP_INVALID_VERSION_DIRECTIVE,
+                mDiagnostics->report(Diagnostics::PP_UNEXPECTED_TOKEN,
                                      token->location, token->text);
                 valid = false;
             }
-            state = VERSION_ENDLINE;
-            break;
-          default:
-            mDiagnostics->report(Diagnostics::PP_UNEXPECTED_TOKEN,
-                                 token->location, token->text);
-            valid = false;
             break;
         }
-
         mTokenizer->lex(token);
     }
-
-    if (valid && (state != VERSION_ENDLINE))
+    if (valid && (state != VERSION_NUMBER + 1))
     {
         mDiagnostics->report(Diagnostics::PP_INVALID_VERSION_DIRECTIVE,
                              token->location, token->text);
         valid = false;
     }
-
     if (valid)
-    {
         mDirectiveHandler->handleVersion(token->location, version);
-    }
 }
 
 void DirectiveParser::parseLine(Token* token)

@@ -21,10 +21,11 @@ class Fence11 : public FenceImpl
     explicit Fence11(rx::Renderer11 *renderer);
     virtual ~Fence11();
 
-    bool isSet() const;
-    void set();
-    bool test(bool flushCommandBuffer);
-    bool hasError() const;
+    GLboolean isFence();
+    void setFence(GLenum condition);
+    GLboolean testFence();
+    void finishFence();
+    void getFenceiv(GLenum pname, GLint *params);
 
   private:
     DISALLOW_COPY_AND_ASSIGN(Fence11);

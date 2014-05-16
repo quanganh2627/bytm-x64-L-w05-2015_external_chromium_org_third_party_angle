@@ -11,7 +11,6 @@
 #define LIBGLESV2_RENDERER_INDEXRANGECACHE_H_
 
 #include "common/angleutils.h"
-#include <map>
 
 namespace rx
 {

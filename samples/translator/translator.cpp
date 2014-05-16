@@ -322,10 +322,6 @@ void PrintActiveVariables(ShHandle compiler, ShShaderInfo varType)
             case SH_INT_VEC2: typeName = "GL_INT_VEC2"; break;
             case SH_INT_VEC3: typeName = "GL_INT_VEC3"; break;
             case SH_INT_VEC4: typeName = "GL_INT_VEC4"; break;
-            case SH_UNSIGNED_INT: typeName = "GL_UNSIGNED_INT"; break;
-            case SH_UNSIGNED_INT_VEC2: typeName = "GL_UNSIGNED_INT_VEC2"; break;
-            case SH_UNSIGNED_INT_VEC3: typeName = "GL_UNSIGNED_INT_VEC3"; break;
-            case SH_UNSIGNED_INT_VEC4: typeName = "GL_UNSIGNED_INT_VEC4"; break;
             case SH_BOOL: typeName = "GL_BOOL"; break;
             case SH_BOOL_VEC2: typeName = "GL_BOOL_VEC2"; break;
             case SH_BOOL_VEC3: typeName = "GL_BOOL_VEC3"; break;
@@ -333,12 +329,6 @@ void PrintActiveVariables(ShHandle compiler, ShShaderInfo varType)
             case SH_FLOAT_MAT2: typeName = "GL_FLOAT_MAT2"; break;
             case SH_FLOAT_MAT3: typeName = "GL_FLOAT_MAT3"; break;
             case SH_FLOAT_MAT4: typeName = "GL_FLOAT_MAT4"; break;
-            case SH_FLOAT_MAT2x3: typeName = "GL_FLOAT_MAT2x3"; break;
-            case SH_FLOAT_MAT3x2: typeName = "GL_FLOAT_MAT3x2"; break;
-            case SH_FLOAT_MAT4x2: typeName = "GL_FLOAT_MAT4x2"; break;
-            case SH_FLOAT_MAT2x4: typeName = "GL_FLOAT_MAT2x4"; break;
-            case SH_FLOAT_MAT3x4: typeName = "GL_FLOAT_MAT3x4"; break;
-            case SH_FLOAT_MAT4x3: typeName = "GL_FLOAT_MAT4x3"; break;
             case SH_SAMPLER_2D: typeName = "GL_SAMPLER_2D"; break;
             case SH_SAMPLER_CUBE: typeName = "GL_SAMPLER_CUBE"; break;
             case SH_SAMPLER_EXTERNAL_OES: typeName = "GL_SAMPLER_EXTERNAL_OES"; break;
@@ -358,7 +348,7 @@ static bool ReadShaderSource(const char* fileName, ShaderSource& source) {
 
     // Obtain file size.
     fseek(in, 0, SEEK_END);
-    size_t count = ftell(in);
+    int count = ftell(in);
     rewind(in);
 
     int len = (int)ceil((float)count / (float)NUM_SOURCE_STRINGS);
@@ -368,7 +358,7 @@ static bool ReadShaderSource(const char* fileName, ShaderSource& source) {
     // string is added to vector.
     do {
         char* data = new char[len + 1];
-        size_t nread = fread(data, 1, len, in);
+        int nread = static_cast<int>(fread(data, 1, len, in));
         data[nread] = '\0';
         source.push_back(data);
 

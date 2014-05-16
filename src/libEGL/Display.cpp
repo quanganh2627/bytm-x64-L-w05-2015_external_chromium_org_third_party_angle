@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "common/debug.h"
-#include "common/mathutil.h"
+#include "libGLESv2/mathutil.h"
 #include "libGLESv2/main.h"
 #include "libGLESv2/Context.h"
 #include "libGLESv2/renderer/SwapChain.h"
@@ -384,29 +384,22 @@ EGLSurface Display::createOffscreenSurface(EGLConfig config, HANDLE shareHandle,
     return success(surface);
 }
 
-EGLContext Display::createContext(EGLConfig configHandle, EGLint clientVersion, const gl::Context *shareContext, bool notifyResets, bool robustAccess)
+EGLContext Display::createContext(EGLConfig configHandle, const gl::Context *shareContext, bool notifyResets, bool robustAccess)
 {
     if (!mRenderer)
     {
-        return EGL_NO_CONTEXT;
+        return NULL;
     }
     else if (mRenderer->testDeviceLost(false))   // Lost device
     {
         if (!restoreLostDevice())
-        {
-            return error(EGL_CONTEXT_LOST, EGL_NO_CONTEXT);
-        }
+            return NULL;
     }
 
-    if (clientVersion > 2 && mRenderer->getMajorShaderModel() < 4)
-    {
-        return error(EGL_BAD_CONFIG, EGL_NO_CONTEXT);
-    }
-
-    gl::Context *context = glCreateContext(clientVersion, shareContext, mRenderer, notifyResets, robustAccess);
+    gl::Context *context = glCreateContext(shareContext, mRenderer, notifyResets, robustAccess);
     mContextSet.insert(context);
 
-    return success(context);
+    return context;
 }
 
 bool Display::restoreLostDevice()
@@ -532,11 +525,8 @@ void Display::initExtensionString()
 
     if (mRenderer->getPostSubBufferSupport())
     {
-        mExtensionString += "EGL_NV_post_sub_buffer ";
+        mExtensionString += "EGL_NV_post_sub_buffer";
     }
-
-    // TODO: complete support for the EGL_KHR_create_context extension
-    mExtensionString += "EGL_KHR_create_context ";
 
     std::string::size_type end = mExtensionString.find_last_not_of(' ');
     if (end != std::string::npos)

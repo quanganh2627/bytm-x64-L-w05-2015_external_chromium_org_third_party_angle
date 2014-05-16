@@ -7,6 +7,8 @@
 #ifndef COMPILIER_BUILT_IN_FUNCTION_EMULATOR_H_
 #define COMPILIER_BUILT_IN_FUNCTION_EMULATOR_H_
 
+#include "GLSLANG/ShaderLang.h"
+
 #include "compiler/translator/InfoSink.h"
 #include "compiler/translator/intermediate.h"
 

@@ -22,15 +22,21 @@ Fence11::Fence11(rx::Renderer11 *renderer)
 
 Fence11::~Fence11()
 {
-    SafeRelease(mQuery);
+    if (mQuery)
+    {
+        mQuery->Release();
+        mQuery = NULL;
+    }
 }
 
-bool Fence11::isSet() const
+GLboolean Fence11::isFence()
 {
+    // GL_NV_fence spec:
+    // A name returned by GenFencesNV, but not yet set via SetFenceNV, is not the name of an existing fence.
     return mQuery != NULL;
 }
 
-void Fence11::set()
+void Fence11::setFence(GLenum condition)
 {
     if (!mQuery)
     {
@@ -45,27 +51,84 @@ void Fence11::set()
     }
 
     mRenderer->getDeviceContext()->End(mQuery);
+
+    setCondition(condition);
+    setStatus(GL_FALSE);
 }
 
-bool Fence11::test(bool flushCommandBuffer)
+GLboolean Fence11::testFence()
 {
-    ASSERT(mQuery);
+    if (mQuery == NULL)
+    {
+        return gl::error(GL_INVALID_OPERATION, GL_TRUE);
+    }
 
-    UINT getDataFlags = (flushCommandBuffer ? 0 : D3D11_ASYNC_GETDATA_DONOTFLUSH);
-    HRESULT result = mRenderer->getDeviceContext()->GetData(mQuery, NULL, 0, getDataFlags);
+    HRESULT result = mRenderer->getDeviceContext()->GetData(mQuery, NULL, 0, 0);
 
     if (mRenderer->isDeviceLost())
     {
-       return gl::error(GL_OUT_OF_MEMORY, true);
+       return gl::error(GL_OUT_OF_MEMORY, GL_TRUE);
     }
 
     ASSERT(result == S_OK || result == S_FALSE);
-    return (result == S_OK);
+    setStatus(result == S_OK);
+    return getStatus();
 }
 
-bool Fence11::hasError() const
+void Fence11::finishFence()
 {
-    return mRenderer->isDeviceLost();
+    if (mQuery == NULL)
+    {
+        return gl::error(GL_INVALID_OPERATION);
+    }
+
+    while (!testFence())
+    {
+        Sleep(0);
+    }
+}
+
+void Fence11::getFenceiv(GLenum pname, GLint *params)
+{
+    if (mQuery == NULL)
+    {
+        return gl::error(GL_INVALID_OPERATION);
+    }
+
+    switch (pname)
+    {
+      case GL_FENCE_STATUS_NV:
+        {
+            // GL_NV_fence spec:
+            // Once the status of a fence has been finished (via FinishFenceNV) or tested and the returned status is TRUE (via either TestFenceNV
+            // or GetFenceivNV querying the FENCE_STATUS_NV), the status remains TRUE until the next SetFenceNV of the fence.
+            if (getStatus())
+            {
+                params[0] = GL_TRUE;
+                return;
+            }
+
+            HRESULT result = mRenderer->getDeviceContext()->GetData(mQuery, NULL, 0, D3D11_ASYNC_GETDATA_DONOTFLUSH);
+
+            if (mRenderer->isDeviceLost())
+            {
+                params[0] = GL_TRUE;
+                return gl::error(GL_OUT_OF_MEMORY);
+            }
+
+            ASSERT(result == S_OK || result == S_FALSE);
+            setStatus(result == S_OK);
+            params[0] = getStatus();
+
+            break;
+        }
+      case GL_FENCE_CONDITION_NV:
+        params[0] = getCondition();
+        break;
+      default:
+        return gl::error(GL_INVALID_ENUM);
+        break;
+    }
 }
 
 }

@@ -4,6 +4,7 @@
 // found in the LICENSE file.
 //
 
+#include "GLSLANG/ShaderLang.h"
 #include "compiler/translator/intermediate.h"
 #include "compiler/translator/LoopInfo.h"
 
