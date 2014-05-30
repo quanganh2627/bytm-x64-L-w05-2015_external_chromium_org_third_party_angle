@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2010 The ANGLE Project Authors. All rights reserved.
+// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -22,7 +22,7 @@ static void writeVersion(ShShaderType type, TIntermNode* root,
 }
 
 TranslatorGLSL::TranslatorGLSL(ShShaderType type, ShShaderSpec spec)
-    : TCompiler(type, spec) {
+    : TCompiler(type, spec, SH_GLSL_OUTPUT) {
 }
 
 void TranslatorGLSL::translate(TIntermNode* root) {
@@ -42,7 +42,7 @@ void TranslatorGLSL::translate(TIntermNode* root) {
     getArrayBoundsClamper().OutputClampingFunctionDefinition(sink);
 
     // Write translated shader.
-    TOutputGLSL outputGLSL(sink, getArrayIndexClampingStrategy(), getHashFunction(), getNameMap(), getSymbolTable());
+    TOutputGLSL outputGLSL(sink, getArrayIndexClampingStrategy(), getHashFunction(), getNameMap(), getSymbolTable(), getShaderVersion());
     root->traverse(&outputGLSL);
 }
 
