@@ -45,6 +45,15 @@ bool ValidateSamplerObjectParameter(GLenum pname);
 bool ValidateReadPixelsParameters(gl::Context *context, GLint x, GLint y, GLsizei width, GLsizei height,
                                   GLenum format, GLenum type, GLsizei *bufSize, GLvoid *pixels);
 
+bool ValidateBeginQuery(gl::Context *context, GLenum target, GLuint id);
+bool ValidateEndQuery(gl::Context *context, GLenum target);
+
+bool ValidateUniform(gl::Context *context, GLenum uniformType, GLint location, GLsizei count);
+bool ValidateUniformMatrix(gl::Context *context, GLenum matrixType, GLint location, GLsizei count,
+                           GLboolean transpose);
+
+bool ValidateStateQuery(gl::Context *context, GLenum pname, GLenum *nativeType, unsigned int *numParams);
+
 }
 
 #endif // LIBGLESV2_VALIDATION_ES_H

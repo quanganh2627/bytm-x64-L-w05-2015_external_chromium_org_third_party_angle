@@ -52,7 +52,7 @@ void __stdcall glActiveTexture(GLenum texture)
             context->setActiveSampler(texture - GL_TEXTURE0);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -101,7 +101,7 @@ void __stdcall glAttachShader(GLuint program, GLuint shader)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -117,20 +117,15 @@ void __stdcall glBeginQueryEXT(GLenum target, GLuint id)
 
         if (context)
         {
-            if (!ValidQueryType(context, target))
+            if (!ValidateBeginQuery(context, target, id))
             {
-                return gl::error(GL_INVALID_ENUM);
-            }
-
-            if (id == 0)
-            {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             context->beginQuery(target, id);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -173,7 +168,7 @@ void __stdcall glBindAttribLocation(GLuint program, GLuint index, const GLchar* 
             programObject->bindAttributeLocation(index, name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -225,7 +220,7 @@ void __stdcall glBindBuffer(GLenum target, GLuint buffer)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -257,7 +252,7 @@ void __stdcall glBindFramebuffer(GLenum target, GLuint framebuffer)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -281,7 +276,7 @@ void __stdcall glBindRenderbuffer(GLenum target, GLuint renderbuffer)
             context->bindRenderbuffer(renderbuffer);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -331,7 +326,7 @@ void __stdcall glBindTexture(GLenum target, GLuint texture)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -351,7 +346,7 @@ void __stdcall glBlendColor(GLclampf red, GLclampf green, GLclampf blue, GLclamp
             context->setBlendColor(gl::clamp01(red), gl::clamp01(green), gl::clamp01(blue), gl::clamp01(alpha));
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -401,7 +396,7 @@ void __stdcall glBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha)
             context->setBlendEquation(modeRGB, modeAlpha);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -540,7 +535,7 @@ void __stdcall glBlendFuncSeparate(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha
             context->setBlendFactors(srcRGB, dstRGB, srcAlpha, dstAlpha);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -600,7 +595,7 @@ void __stdcall glBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, 
             buffer->bufferData(data, size, usage);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -658,7 +653,7 @@ void __stdcall glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, 
             buffer->bufferSubData(data, size, offset);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -684,7 +679,7 @@ GLenum __stdcall glCheckFramebufferStatus(GLenum target)
             return framebuffer->completeness();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, 0);
     }
@@ -717,7 +712,7 @@ void __stdcall glClear(GLbitfield mask)
             context->clear(mask);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -737,7 +732,7 @@ void __stdcall glClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclamp
             context->setClearColor(red, green, blue, alpha);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -756,7 +751,7 @@ void __stdcall glClearDepthf(GLclampf depth)
             context->setClearDepth(depth);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -775,7 +770,7 @@ void __stdcall glClearStencil(GLint s)
             context->setClearStencil(s);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -795,7 +790,7 @@ void __stdcall glColorMask(GLboolean red, GLboolean green, GLboolean blue, GLboo
             context->setColorMask(red == GL_TRUE, green == GL_TRUE, blue == GL_TRUE, alpha == GL_TRUE);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -828,7 +823,7 @@ void __stdcall glCompileShader(GLuint shader)
             shaderObject->compile();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -892,7 +887,7 @@ void __stdcall glCompressedTexImage2D(GLenum target, GLint level, GLenum interna
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -957,7 +952,7 @@ void __stdcall glCompressedTexSubImage2D(GLenum target, GLint level, GLint xoffs
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1017,7 +1012,7 @@ void __stdcall glCopyTexImage2D(GLenum target, GLint level, GLenum internalforma
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1078,7 +1073,7 @@ void __stdcall glCopyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GL
         }
     }
 
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1097,7 +1092,7 @@ GLuint __stdcall glCreateProgram(void)
             return context->createProgram();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, 0);
     }
@@ -1125,7 +1120,7 @@ GLuint __stdcall glCreateShader(GLenum type)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, 0);
     }
@@ -1157,7 +1152,7 @@ void __stdcall glCullFace(GLenum mode)
             return gl::error(GL_INVALID_ENUM);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1184,7 +1179,7 @@ void __stdcall glDeleteBuffers(GLsizei n, const GLuint* buffers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1211,7 +1206,7 @@ void __stdcall glDeleteFencesNV(GLsizei n, const GLuint* fences)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1241,7 +1236,7 @@ void __stdcall glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1277,7 +1272,7 @@ void __stdcall glDeleteProgram(GLuint program)
             context->deleteProgram(program);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1304,7 +1299,7 @@ void __stdcall glDeleteQueriesEXT(GLsizei n, const GLuint *ids)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1331,7 +1326,7 @@ void __stdcall glDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1367,7 +1362,7 @@ void __stdcall glDeleteShader(GLuint shader)
             context->deleteShader(shader);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1397,7 +1392,7 @@ void __stdcall glDeleteTextures(GLsizei n, const GLuint* textures)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1431,7 +1426,7 @@ void __stdcall glDepthFunc(GLenum func)
             context->setDepthFunc(func);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1450,7 +1445,7 @@ void __stdcall glDepthMask(GLboolean flag)
             context->setDepthMask(flag != GL_FALSE);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1469,7 +1464,7 @@ void __stdcall glDepthRangef(GLclampf zNear, GLclampf zFar)
             context->setDepthRange(zNear, zFar);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1522,7 +1517,7 @@ void __stdcall glDetachShader(GLuint program, GLuint shader)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1546,7 +1541,7 @@ void __stdcall glDisable(GLenum cap)
             context->setCap(cap, false);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1570,7 +1565,7 @@ void __stdcall glDisableVertexAttribArray(GLuint index)
             context->setEnableVertexAttribArray(index, false);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1610,7 +1605,7 @@ void __stdcall glDrawArrays(GLenum mode, GLint first, GLsizei count)
             context->drawArrays(mode, first, count, 0);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1653,7 +1648,7 @@ void __stdcall glDrawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei coun
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1707,7 +1702,7 @@ void __stdcall glDrawElements(GLenum mode, GLsizei count, GLenum type, const GLv
             context->drawElements(mode, count, type, indices, 0);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1764,7 +1759,7 @@ void __stdcall glDrawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum t
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1788,7 +1783,7 @@ void __stdcall glEnable(GLenum cap)
             context->setCap(cap, true);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1812,7 +1807,7 @@ void __stdcall glEnableVertexAttribArray(GLuint index)
             context->setEnableVertexAttribArray(index, true);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1828,15 +1823,15 @@ void __stdcall glEndQueryEXT(GLenum target)
 
         if (context)
         {
-            if (!ValidQueryType(context, target))
+            if (!ValidateEndQuery(context, target))
             {
-                return gl::error(GL_INVALID_ENUM);
+                return;
             }
 
             context->endQuery(target);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1867,7 +1862,7 @@ void __stdcall glFinishFenceNV(GLuint fence)
             fenceObject->finishFence();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1886,7 +1881,7 @@ void __stdcall glFinish(void)
             context->sync(true);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1905,7 +1900,7 @@ void __stdcall glFlush(void)
             context->sync(false);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -1960,7 +1955,7 @@ void __stdcall glFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenu
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2011,7 +2006,7 @@ void __stdcall glFramebufferTexture2D(GLenum target, GLenum attachment, GLenum t
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2040,7 +2035,7 @@ void __stdcall glFrontFace(GLenum mode)
             return gl::error(GL_INVALID_ENUM);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2067,7 +2062,7 @@ void __stdcall glGenBuffers(GLsizei n, GLuint* buffers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2131,7 +2126,7 @@ void __stdcall glGenerateMipmap(GLenum target)
             texture->generateMipmaps();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2158,7 +2153,7 @@ void __stdcall glGenFencesNV(GLsizei n, GLuint* fences)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2185,7 +2180,7 @@ void __stdcall glGenFramebuffers(GLsizei n, GLuint* framebuffers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2212,7 +2207,7 @@ void __stdcall glGenQueriesEXT(GLsizei n, GLuint* ids)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2239,7 +2234,7 @@ void __stdcall glGenRenderbuffers(GLsizei n, GLuint* renderbuffers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2266,7 +2261,7 @@ void __stdcall glGenTextures(GLsizei n, GLuint* textures)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2311,7 +2306,7 @@ void __stdcall glGetActiveAttrib(GLuint program, GLuint index, GLsizei bufsize, 
             programObject->getActiveAttribute(index, bufsize, length, size, type, name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2356,7 +2351,7 @@ void __stdcall glGetActiveUniform(GLuint program, GLuint index, GLsizei bufsize,
             programObject->getActiveUniform(index, bufsize, length, size, type, name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2395,7 +2390,7 @@ void __stdcall glGetAttachedShaders(GLuint program, GLsizei maxcount, GLsizei* c
             return programObject->getAttachedShaders(maxcount, count, shaders);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2435,7 +2430,7 @@ int __stdcall glGetAttribLocation(GLuint program, const GLchar* name)
             return programBinary->getAttributeLocation(name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, -1);
     }
@@ -2455,12 +2450,10 @@ void __stdcall glGetBooleanv(GLenum pname, GLboolean* params)
         {
             GLenum nativeType;
             unsigned int numParams = 0;
-            if (!context->getQueryParameterInfo(pname, &nativeType, &numParams))
-                return gl::error(GL_INVALID_ENUM);
-
-            // pname is valid, but there are no parameters to return
-            if (numParams == 0)
+            if (!ValidateStateQuery(context, pname, &nativeType, &numParams))
+            {
                 return;
+            }
 
             if (nativeType == GL_BOOL)
             {
@@ -2472,7 +2465,7 @@ void __stdcall glGetBooleanv(GLenum pname, GLboolean* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2530,7 +2523,7 @@ void __stdcall glGetBufferParameteriv(GLenum target, GLenum pname, GLint* params
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2585,7 +2578,7 @@ void __stdcall glGetFenceivNV(GLuint fence, GLenum pname, GLint *params)
             params[0] = fenceObject->getFencei(pname);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2603,12 +2596,10 @@ void __stdcall glGetFloatv(GLenum pname, GLfloat* params)
         {
             GLenum nativeType;
             unsigned int numParams = 0;
-            if (!context->getQueryParameterInfo(pname, &nativeType, &numParams))
-                return gl::error(GL_INVALID_ENUM);
-
-            // pname is valid, but that there are no parameters to return.
-            if (numParams == 0)
+            if (!ValidateStateQuery(context, pname, &nativeType, &numParams))
+            {
                 return;
+            }
 
             if (nativeType == GL_FLOAT)
             {
@@ -2620,7 +2611,7 @@ void __stdcall glGetFloatv(GLenum pname, GLfloat* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2923,7 +2914,7 @@ void __stdcall glGetFramebufferAttachmentParameteriv(GLenum target, GLenum attac
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -2944,7 +2935,7 @@ GLenum __stdcall glGetGraphicsResetStatusEXT(void)
 
         return GL_NO_ERROR;
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return GL_OUT_OF_MEMORY;
     }
@@ -2962,12 +2953,11 @@ void __stdcall glGetIntegerv(GLenum pname, GLint* params)
         {
             GLenum nativeType;
             unsigned int numParams = 0;
-            if (!context->getQueryParameterInfo(pname, &nativeType, &numParams))
-                return gl::error(GL_INVALID_ENUM);
 
-            // pname is valid, but there are no parameters to return
-            if (numParams == 0)
+            if (!ValidateStateQuery(context, pname, &nativeType, &numParams))
+            {
                 return;
+            }
 
             if (nativeType == GL_INT)
             {
@@ -2979,7 +2969,7 @@ void __stdcall glGetIntegerv(GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3067,7 +3057,7 @@ void __stdcall glGetProgramiv(GLuint program, GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3099,7 +3089,7 @@ void __stdcall glGetProgramInfoLog(GLuint program, GLsizei bufsize, GLsizei* len
             programObject->getInfoLog(bufsize, length, infolog);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3123,7 +3113,7 @@ void __stdcall glGetQueryivEXT(GLenum target, GLenum pname, GLint *params)
             switch (pname)
             {
               case GL_CURRENT_QUERY_EXT:
-                params[0] = context->getActiveQuery(target);
+                params[0] = context->getActiveQueryId(target);
                 break;
 
               default:
@@ -3131,7 +3121,7 @@ void __stdcall glGetQueryivEXT(GLenum target, GLenum pname, GLint *params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3154,7 +3144,7 @@ void __stdcall glGetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint *params)
                 return gl::error(GL_INVALID_OPERATION);
             }
 
-            if (context->getActiveQuery(queryObject->getType()) == id)
+            if (context->getActiveQueryId(queryObject->getType()) == id)
             {
                 return gl::error(GL_INVALID_OPERATION);
             }
@@ -3172,7 +3162,7 @@ void __stdcall glGetQueryObjectuivEXT(GLuint id, GLenum pname, GLuint *params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3226,7 +3216,7 @@ void __stdcall glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* 
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3274,7 +3264,7 @@ void __stdcall glGetShaderiv(GLuint shader, GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3306,7 +3296,7 @@ void __stdcall glGetShaderInfoLog(GLuint shader, GLsizei bufsize, GLsizei* lengt
             shaderObject->getInfoLog(bufsize, length, infolog);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3351,7 +3341,7 @@ void __stdcall glGetShaderPrecisionFormat(GLenum shadertype, GLenum precisiontyp
             return gl::error(GL_INVALID_ENUM);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3383,7 +3373,7 @@ void __stdcall glGetShaderSource(GLuint shader, GLsizei bufsize, GLsizei* length
             shaderObject->getSource(bufsize, length, source);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3415,7 +3405,7 @@ void __stdcall glGetTranslatedShaderSourceANGLE(GLuint shader, GLsizei bufsize, 
             shaderObject->getTranslatedSource(bufsize, length, source);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3459,7 +3449,7 @@ const GLubyte* __stdcall glGetString(GLenum name)
             return gl::error(GL_INVALID_ENUM, (GLubyte*)NULL);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, (GLubyte*)NULL);
     }
@@ -3585,7 +3575,7 @@ void __stdcall glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3711,7 +3701,7 @@ void __stdcall glGetTexParameteriv(GLenum target, GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3757,7 +3747,7 @@ void __stdcall glGetnUniformfvEXT(GLuint program, GLint location, GLsizei bufSiz
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3797,7 +3787,7 @@ void __stdcall glGetUniformfv(GLuint program, GLint location, GLfloat* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3843,7 +3833,7 @@ void __stdcall glGetnUniformivEXT(GLuint program, GLint location, GLsizei bufSiz
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3883,7 +3873,7 @@ void __stdcall glGetUniformiv(GLuint program, GLint location, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -3927,7 +3917,7 @@ int __stdcall glGetUniformLocation(GLuint program, const GLchar* name)
             return programBinary->getUniformLocation(name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, -1);
     }
@@ -3971,7 +3961,7 @@ void __stdcall glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4014,7 +4004,7 @@ void __stdcall glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4043,7 +4033,7 @@ void __stdcall glGetVertexAttribPointerv(GLuint index, GLenum pname, GLvoid** po
             *pointer = const_cast<GLvoid*>(context->getVertexAttribPointer(index));
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4078,7 +4068,7 @@ void __stdcall glHint(GLenum target, GLenum mode)
             return gl::error(GL_INVALID_ENUM);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4102,7 +4092,7 @@ GLboolean __stdcall glIsBuffer(GLuint buffer)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4128,7 +4118,7 @@ GLboolean __stdcall glIsEnabled(GLenum cap)
             return context->getCap(cap);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, false);
     }
@@ -4156,7 +4146,7 @@ GLboolean __stdcall glIsFenceNV(GLuint fence)
             return fenceObject->isFence();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4182,7 +4172,7 @@ GLboolean __stdcall glIsFramebuffer(GLuint framebuffer)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4208,7 +4198,7 @@ GLboolean __stdcall glIsProgram(GLuint program)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4229,7 +4219,7 @@ GLboolean __stdcall glIsQueryEXT(GLuint id)
             return (context->getQuery(id, false, GL_NONE) != NULL) ? GL_TRUE : GL_FALSE;
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4255,7 +4245,7 @@ GLboolean __stdcall glIsRenderbuffer(GLuint renderbuffer)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4281,7 +4271,7 @@ GLboolean __stdcall glIsShader(GLuint shader)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4307,7 +4297,7 @@ GLboolean __stdcall glIsTexture(GLuint texture)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -4333,7 +4323,7 @@ void __stdcall glLineWidth(GLfloat width)
             context->setLineWidth(width);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4366,7 +4356,7 @@ void __stdcall glLinkProgram(GLuint program)
             context->linkProgram(program);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4426,7 +4416,7 @@ void __stdcall glPixelStorei(GLenum pname, GLint param)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4445,7 +4435,7 @@ void __stdcall glPolygonOffset(GLfloat factor, GLfloat units)
             context->setPolygonOffsetParams(factor, units);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4479,7 +4469,7 @@ void __stdcall glReadnPixelsEXT(GLint x, GLint y, GLsizei width, GLsizei height,
             context->readPixels(x, y, width, height, format, type, &bufSize, data);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4512,7 +4502,7 @@ void __stdcall glReadPixels(GLint x, GLint y, GLsizei width, GLsizei height,
             context->readPixels(x, y, width, height, format, type, NULL, pixels);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4526,7 +4516,7 @@ void __stdcall glReleaseShaderCompiler(void)
     {
         gl::Shader::releaseCompiler();
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4552,7 +4542,7 @@ void __stdcall glRenderbufferStorageMultisampleANGLE(GLenum target, GLsizei samp
             context->setRenderbufferStorage(width, height, internalformat, samples);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4576,7 +4566,7 @@ void __stdcall glSampleCoverage(GLclampf value, GLboolean invert)
             context->setSampleCoverageParams(gl::clamp01(value), invert == GL_TRUE);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4607,7 +4597,7 @@ void __stdcall glSetFenceNV(GLuint fence, GLenum condition)
             fenceObject->setFence(condition);    
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4631,7 +4621,7 @@ void __stdcall glScissor(GLint x, GLint y, GLsizei width, GLsizei height)
             context->setScissorParams(x, y, width, height);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4648,7 +4638,7 @@ void __stdcall glShaderBinary(GLsizei n, const GLuint* shaders, GLenum binaryfor
         // No binary shader formats are supported.
         return gl::error(GL_INVALID_ENUM);
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4687,7 +4677,7 @@ void __stdcall glShaderSource(GLuint shader, GLsizei count, const GLchar* const*
             shaderObject->setSource(count, string, length);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4744,7 +4734,7 @@ void __stdcall glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4786,7 +4776,7 @@ void __stdcall glStencilMaskSeparate(GLenum face, GLuint mask)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4874,7 +4864,7 @@ void __stdcall glStencilOpSeparate(GLenum face, GLenum fail, GLenum zfail, GLenu
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4905,7 +4895,7 @@ GLboolean __stdcall glTestFenceNV(GLuint fence)
             return fenceObject->testFence();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         gl::error(GL_OUT_OF_MEMORY);
     }
@@ -4988,7 +4978,7 @@ void __stdcall glTexImage2D(GLenum target, GLint level, GLint internalformat, GL
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5039,7 +5029,7 @@ void __stdcall glTexParameterf(GLenum target, GLenum pname, GLfloat param)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5095,7 +5085,7 @@ void __stdcall glTexParameteri(GLenum target, GLenum pname, GLint param)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5150,7 +5140,7 @@ void __stdcall glTexStorage2DEXT(GLenum target, GLsizei levels, GLenum internalf
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5216,7 +5206,7 @@ void __stdcall glTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint 
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5233,33 +5223,20 @@ void __stdcall glUniform1fv(GLint location, GLsizei count, const GLfloat* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_FLOAT, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform1fv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform1fv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5276,33 +5253,20 @@ void __stdcall glUniform1iv(GLint location, GLsizei count, const GLint* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_INT, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform1iv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform1iv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5321,33 +5285,20 @@ void __stdcall glUniform2fv(GLint location, GLsizei count, const GLfloat* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-        
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_FLOAT_VEC2, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform2fv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform2fv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5366,33 +5317,20 @@ void __stdcall glUniform2iv(GLint location, GLsizei count, const GLint* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_INT_VEC2, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform2iv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform2iv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5411,33 +5349,20 @@ void __stdcall glUniform3fv(GLint location, GLsizei count, const GLfloat* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_FLOAT_VEC3, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform3fv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform3fv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5456,33 +5381,20 @@ void __stdcall glUniform3iv(GLint location, GLsizei count, const GLint* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_INT_VEC3, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform3iv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform3iv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5501,33 +5413,20 @@ void __stdcall glUniform4fv(GLint location, GLsizei count, const GLfloat* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_FLOAT_VEC4, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform4fv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform4fv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5546,33 +5445,20 @@ void __stdcall glUniform4iv(GLint location, GLsizei count, const GLint* v)
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
+            if (!ValidateUniform(context, GL_INT_VEC4, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
-            if (!programBinary->setUniform4iv(location, count, v))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
+            programBinary->setUniform4iv(location, count, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5585,38 +5471,20 @@ void __stdcall glUniformMatrix2fv(GLint location, GLsizei count, GLboolean trans
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (transpose != GL_FALSE && context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT2, location, count, transpose))
             {
-                return gl::error(GL_INVALID_VALUE);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix2fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix2fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5629,38 +5497,20 @@ void __stdcall glUniformMatrix3fv(GLint location, GLsizei count, GLboolean trans
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (transpose != GL_FALSE && context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT3, location, count, transpose))
             {
-                return gl::error(GL_INVALID_VALUE);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix3fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix3fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5673,38 +5523,20 @@ void __stdcall glUniformMatrix4fv(GLint location, GLsizei count, GLboolean trans
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (transpose != GL_FALSE && context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT4, location, count, transpose))
             {
-                return gl::error(GL_INVALID_VALUE);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix4fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix4fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5742,7 +5574,7 @@ void __stdcall glUseProgram(GLuint program)
             context->useProgram(program);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5775,7 +5607,7 @@ void __stdcall glValidateProgram(GLuint program)
             programObject->validate();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5800,7 +5632,7 @@ void __stdcall glVertexAttrib1f(GLuint index, GLfloat x)
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5825,7 +5657,7 @@ void __stdcall glVertexAttrib1fv(GLuint index, const GLfloat* values)
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5850,7 +5682,7 @@ void __stdcall glVertexAttrib2f(GLuint index, GLfloat x, GLfloat y)
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5875,7 +5707,7 @@ void __stdcall glVertexAttrib2fv(GLuint index, const GLfloat* values)
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5900,7 +5732,7 @@ void __stdcall glVertexAttrib3f(GLuint index, GLfloat x, GLfloat y, GLfloat z)
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5925,7 +5757,7 @@ void __stdcall glVertexAttrib3fv(GLuint index, const GLfloat* values)
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5950,7 +5782,7 @@ void __stdcall glVertexAttrib4f(GLuint index, GLfloat x, GLfloat y, GLfloat z, G
             context->setVertexAttribf(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5974,7 +5806,7 @@ void __stdcall glVertexAttrib4fv(GLuint index, const GLfloat* values)
             context->setVertexAttribf(index, values);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -5998,7 +5830,7 @@ void __stdcall glVertexAttribDivisorANGLE(GLuint index, GLuint divisor)
             context->setVertexAttribDivisor(index, divisor);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6075,7 +5907,7 @@ void __stdcall glVertexAttribPointer(GLuint index, GLint size, GLenum type, GLbo
                                           normalized == GL_TRUE, false, stride, ptr);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6099,7 +5931,7 @@ void __stdcall glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
             context->setViewportParams(x, y, width, height);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6126,7 +5958,7 @@ void __stdcall glReadBuffer(GLenum mode)
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6152,7 +5984,7 @@ void __stdcall glDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsize
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6204,7 +6036,7 @@ void __stdcall glTexImage3D(GLenum target, GLint level, GLint internalformat, GL
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6263,7 +6095,7 @@ void __stdcall glTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint 
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6317,7 +6149,7 @@ void __stdcall glCopyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GL
             texture->copySubImage(target, level, xoffset, yoffset, zoffset, x, y, width, height, framebuffer);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6374,7 +6206,7 @@ void __stdcall glCompressedTexImage3D(GLenum target, GLint level, GLenum interna
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6444,7 +6276,7 @@ void __stdcall glCompressedTexSubImage3D(GLenum target, GLint level, GLint xoffs
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6476,7 +6308,7 @@ void __stdcall glGenQueries(GLsizei n, GLuint* ids)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6508,7 +6340,7 @@ void __stdcall glDeleteQueries(GLsizei n, const GLuint* ids)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6532,7 +6364,7 @@ GLboolean __stdcall glIsQuery(GLuint id)
             return (context->getQuery(id, false, GL_NONE) != NULL) ? GL_TRUE : GL_FALSE;
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -6555,20 +6387,14 @@ void __stdcall glBeginQuery(GLenum target, GLuint id)
                 return gl::error(GL_INVALID_OPERATION);
             }
 
-            if (!ValidQueryType(context, target))
+            if (!ValidateBeginQuery(context, target, id))
             {
-                return gl::error(GL_INVALID_ENUM);
+                return;
             }
-
-            if (id == 0)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
             context->beginQuery(target, id);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6589,15 +6415,15 @@ void __stdcall glEndQuery(GLenum target)
                 return gl::error(GL_INVALID_OPERATION);
             }
 
-            if (!ValidQueryType(context, target))
+            if (!ValidateEndQuery(context, target))
             {
-                return gl::error(GL_INVALID_ENUM);
+                return;
             }
 
             context->endQuery(target);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6626,7 +6452,7 @@ void __stdcall glGetQueryiv(GLenum target, GLenum pname, GLint* params)
             switch (pname)
             {
               case GL_CURRENT_QUERY:
-                params[0] = context->getActiveQuery(target);
+                params[0] = static_cast<GLint>(context->getActiveQueryId(target));
                 break;
 
               default:
@@ -6634,7 +6460,7 @@ void __stdcall glGetQueryiv(GLenum target, GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6662,7 +6488,7 @@ void __stdcall glGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params)
                 return gl::error(GL_INVALID_OPERATION);
             }
 
-            if (context->getActiveQuery(queryObject->getType()) == id)
+            if (context->getActiveQueryId(queryObject->getType()) == id)
             {
                 return gl::error(GL_INVALID_OPERATION);
             }
@@ -6680,7 +6506,7 @@ void __stdcall glGetQueryObjectuiv(GLuint id, GLenum pname, GLuint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6704,7 +6530,7 @@ GLboolean __stdcall glUnmapBuffer(GLenum target)
             return glUnmapBufferOES(target);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -6730,7 +6556,7 @@ void __stdcall glGetBufferPointerv(GLenum target, GLenum pname, GLvoid** params)
             glGetBufferPointervOES(target, pname, params);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6752,7 +6578,7 @@ void __stdcall glDrawBuffers(GLsizei n, const GLenum* bufs)
             glDrawBuffersEXT(n, bufs);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6765,38 +6591,20 @@ void __stdcall glUniformMatrix2x3fv(GLint location, GLsizei count, GLboolean tra
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT2x3, location, count, transpose))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix2x3fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix2x3fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6809,38 +6617,20 @@ void __stdcall glUniformMatrix3x2fv(GLint location, GLsizei count, GLboolean tra
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT3x2, location, count, transpose))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix3x2fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix3x2fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6853,38 +6643,20 @@ void __stdcall glUniformMatrix2x4fv(GLint location, GLsizei count, GLboolean tra
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT2x4, location, count, transpose))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix2x4fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix2x4fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6897,38 +6669,20 @@ void __stdcall glUniformMatrix4x2fv(GLint location, GLsizei count, GLboolean tra
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT4x2, location, count, transpose))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix4x2fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix4x2fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6941,38 +6695,20 @@ void __stdcall glUniformMatrix3x4fv(GLint location, GLsizei count, GLboolean tra
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT3x4, location, count, transpose))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix3x4fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix3x4fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -6985,38 +6721,20 @@ void __stdcall glUniformMatrix4x3fv(GLint location, GLsizei count, GLboolean tra
 
     try
     {
-        if (count < 0)
-        {
-            return gl::error(GL_INVALID_VALUE);
-        }
-
-        if (location == -1)
-        {
-            return;
-        }
-
         gl::Context *context = gl::getNonLostContext();
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniformMatrix(context, GL_FLOAT_MAT4x3, location, count, transpose))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniformMatrix4x3fv(location, count, transpose, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniformMatrix4x3fv(location, count, transpose, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7049,7 +6767,7 @@ void __stdcall glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint sr
                                      mask, filter);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7080,7 +6798,7 @@ void __stdcall glRenderbufferStorageMultisample(GLenum target, GLsizei samples, 
             context->setRenderbufferStorage(width, height, internalformat, samples);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7129,7 +6847,7 @@ void __stdcall glFramebufferTextureLayer(GLenum target, GLenum attachment, GLuin
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7154,7 +6872,7 @@ GLvoid* __stdcall glMapBufferRange(GLenum target, GLintptr offset, GLsizeiptr le
             return glMapBufferRangeEXT(target, offset, length, access);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, reinterpret_cast<GLvoid*>(NULL));
     }
@@ -7180,7 +6898,7 @@ void __stdcall glFlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeip
             glFlushMappedBufferRangeEXT(target, offset, length);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7213,7 +6931,7 @@ void __stdcall glBindVertexArray(GLuint array)
             context->bindVertexArray(array);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7248,7 +6966,7 @@ void __stdcall glDeleteVertexArrays(GLsizei n, const GLuint* arrays)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7280,7 +6998,7 @@ void __stdcall glGenVertexArrays(GLsizei n, GLuint* arrays)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7311,7 +7029,7 @@ GLboolean __stdcall glIsVertexArray(GLuint array)
             return (vao != NULL ? GL_TRUE : GL_FALSE);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -7386,7 +7104,7 @@ void __stdcall glGetIntegeri_v(GLenum target, GLuint index, GLint* data)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7435,7 +7153,7 @@ void __stdcall glBeginTransformFeedback(GLenum primitiveMode)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7467,7 +7185,7 @@ void __stdcall glEndTransformFeedback(void)
             transformFeedback->stop();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7545,7 +7263,7 @@ void __stdcall glBindBufferRange(GLenum target, GLuint index, GLuint buffer, GLi
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7604,7 +7322,7 @@ void __stdcall glBindBufferBase(GLenum target, GLuint index, GLuint buffer)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7656,7 +7374,7 @@ void __stdcall glTransformFeedbackVaryings(GLuint program, GLsizei count, const 
             programObject->setTransformFeedbackVaryings(count, varyings, bufferMode);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7700,7 +7418,7 @@ void __stdcall glGetTransformFeedbackVarying(GLuint program, GLuint index, GLsiz
             programObject->getTransformFeedbackVarying(index, bufSize, length, size, type, name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7773,7 +7491,7 @@ void __stdcall glVertexAttribIPointer(GLuint index, GLint size, GLenum type, GLs
                                           stride, pointer);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7821,7 +7539,7 @@ void __stdcall glGetVertexAttribIiv(GLuint index, GLenum pname, GLint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7869,7 +7587,7 @@ void __stdcall glGetVertexAttribIuiv(GLuint index, GLenum pname, GLuint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7900,7 +7618,7 @@ void __stdcall glVertexAttribI4i(GLuint index, GLint x, GLint y, GLint z, GLint 
             context->setVertexAttribi(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7931,7 +7649,7 @@ void __stdcall glVertexAttribI4ui(GLuint index, GLuint x, GLuint y, GLuint z, GL
             context->setVertexAttribu(index, vals);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7960,7 +7678,7 @@ void __stdcall glVertexAttribI4iv(GLuint index, const GLint* v)
             context->setVertexAttribi(index, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -7989,7 +7707,7 @@ void __stdcall glVertexAttribI4uiv(GLuint index, const GLuint* v)
             context->setVertexAttribu(index, v);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8035,7 +7753,7 @@ void __stdcall glGetUniformuiv(GLuint program, GLint location, GLuint* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8078,7 +7796,7 @@ GLint __stdcall glGetFragDataLocation(GLuint program, const GLchar *name)
             return programBinary->getFragDataLocation(name);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, 0);
     }
@@ -8120,24 +7838,16 @@ void __stdcall glUniform1uiv(GLint location, GLsizei count, const GLuint* value)
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniform(context, GL_UNSIGNED_INT, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniform1uiv(location, count, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniform1uiv(location, count, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8154,24 +7864,16 @@ void __stdcall glUniform2uiv(GLint location, GLsizei count, const GLuint* value)
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniform(context, GL_UNSIGNED_INT_VEC2, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniform2uiv(location, count, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniform2uiv(location, count, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8188,24 +7890,16 @@ void __stdcall glUniform3uiv(GLint location, GLsizei count, const GLuint* value)
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniform(context, GL_UNSIGNED_INT_VEC3, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniform3uiv(location, count, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniform3uiv(location, count, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8222,24 +7916,16 @@ void __stdcall glUniform4uiv(GLint location, GLsizei count, const GLuint* value)
 
         if (context)
         {
-            if (context->getClientVersion() < 3)
+            if (!ValidateUniform(context, GL_UNSIGNED_INT_VEC4, location, count))
             {
-                return gl::error(GL_INVALID_OPERATION);
+                return;
             }
 
             gl::ProgramBinary *programBinary = context->getCurrentProgramBinary();
-            if (!programBinary)
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
-
-            if (!programBinary->setUniform4uiv(location, count, value))
-            {
-                return gl::error(GL_INVALID_OPERATION);
-            }
+            programBinary->setUniform4uiv(location, count, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8282,7 +7968,7 @@ void __stdcall glClearBufferiv(GLenum buffer, GLint drawbuffer, const GLint* val
             context->clearBufferiv(buffer, drawbuffer, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8319,7 +8005,7 @@ void __stdcall glClearBufferuiv(GLenum buffer, GLint drawbuffer, const GLuint* v
             context->clearBufferuiv(buffer, drawbuffer, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8362,7 +8048,7 @@ void __stdcall glClearBufferfv(GLenum buffer, GLint drawbuffer, const GLfloat* v
             context->clearBufferfv(buffer, drawbuffer, value);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8399,7 +8085,7 @@ void __stdcall glClearBufferfi(GLenum buffer, GLint drawbuffer, GLfloat depth, G
             context->clearBufferfi(buffer, drawbuffer, depth, stencil);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8433,7 +8119,7 @@ const GLubyte* __stdcall glGetStringi(GLenum name, GLuint index)
             return reinterpret_cast<const GLubyte*>(context->getExtensionString(index));
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, reinterpret_cast<GLubyte*>(NULL));
     }
@@ -8496,7 +8182,7 @@ void __stdcall glCopyBufferSubData(GLenum readTarget, GLenum writeTarget, GLintp
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8554,7 +8240,7 @@ void __stdcall glGetUniformIndices(GLuint program, GLsizei uniformCount, const G
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8634,7 +8320,7 @@ void __stdcall glGetActiveUniformsiv(GLuint program, GLsizei uniformCount, const
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8678,7 +8364,7 @@ GLuint __stdcall glGetUniformBlockIndex(GLuint program, const GLchar* uniformBlo
             return programBinary->getUniformBlockIndex(uniformBlockName);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, 0);
     }
@@ -8742,7 +8428,7 @@ void __stdcall glGetActiveUniformBlockiv(GLuint program, GLuint uniformBlockInde
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8788,7 +8474,7 @@ void __stdcall glGetActiveUniformBlockName(GLuint program, GLuint uniformBlockIn
             programBinary->getActiveUniformBlockName(uniformBlockIndex, bufSize, length, uniformBlockName);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8840,7 +8526,7 @@ void __stdcall glUniformBlockBinding(GLuint program, GLuint uniformBlockIndex, G
             programObject->bindUniformBlock(uniformBlockIndex, uniformBlockBinding);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8866,7 +8552,7 @@ void __stdcall glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GL
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8892,7 +8578,7 @@ void __stdcall glDrawElementsInstanced(GLenum mode, GLsizei count, GLenum type, 
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -8926,7 +8612,7 @@ GLsync __stdcall glFenceSync(GLenum condition, GLbitfield flags)
             return context->createFenceSync(condition);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, reinterpret_cast<GLsync>(NULL));
     }
@@ -8952,7 +8638,7 @@ GLboolean __stdcall glIsSync(GLsync sync)
             return (context->getFenceSync(sync) != NULL);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -8983,7 +8669,7 @@ void __stdcall glDeleteSync(GLsync sync)
             context->deleteFenceSync(sync);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9020,7 +8706,7 @@ GLenum __stdcall glClientWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeou
             return fenceSync->clientWait(flags, timeout);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -9064,7 +8750,7 @@ void __stdcall glWaitSync(GLsync sync, GLbitfield flags, GLuint64 timeout)
             fenceSync->serverWait();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9088,12 +8774,10 @@ void __stdcall glGetInteger64v(GLenum pname, GLint64* params)
 
             GLenum nativeType;
             unsigned int numParams = 0;
-            if (!context->getQueryParameterInfo(pname, &nativeType, &numParams))
-                return gl::error(GL_INVALID_ENUM);
-
-            // pname is valid, but that there are no parameters to return.
-            if (numParams == 0)
+            if (!ValidateStateQuery(context, pname, &nativeType, &numParams))
+            {
                 return;
+            }
 
             if (nativeType == GL_INT_64_ANGLEX)
             {
@@ -9105,7 +8789,7 @@ void __stdcall glGetInteger64v(GLenum pname, GLint64* params)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9151,7 +8835,7 @@ void __stdcall glGetSynciv(GLsync sync, GLenum pname, GLsizei bufSize, GLsizei* 
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9221,7 +8905,7 @@ void __stdcall glGetInteger64i_v(GLenum target, GLuint index, GLint64* data)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9285,7 +8969,7 @@ void __stdcall glGetBufferParameteri64v(GLenum target, GLenum pname, GLint64* pa
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9317,7 +9001,7 @@ void __stdcall glGenSamplers(GLsizei count, GLuint* samplers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9349,7 +9033,7 @@ void __stdcall glDeleteSamplers(GLsizei count, const GLuint* samplers)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9373,7 +9057,7 @@ GLboolean __stdcall glIsSampler(GLuint sampler)
             return context->isSampler(sampler);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -9409,7 +9093,7 @@ void __stdcall glBindSampler(GLuint unit, GLuint sampler)
             context->bindSampler(unit, sampler);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9448,7 +9132,7 @@ void __stdcall glSamplerParameteri(GLuint sampler, GLenum pname, GLint param)
             context->samplerParameteri(sampler, pname, param);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9492,7 +9176,7 @@ void __stdcall glSamplerParameterf(GLuint sampler, GLenum pname, GLfloat param)
             context->samplerParameterf(sampler, pname, param);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9531,7 +9215,7 @@ void __stdcall glGetSamplerParameteriv(GLuint sampler, GLenum pname, GLint* para
             *params = context->getSamplerParameteri(sampler, pname);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9565,7 +9249,7 @@ void __stdcall glGetSamplerParameterfv(GLuint sampler, GLenum pname, GLfloat* pa
             *params = context->getSamplerParameterf(sampler, pname);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9594,7 +9278,7 @@ void __stdcall glVertexAttribDivisor(GLuint index, GLuint divisor)
             context->setVertexAttribDivisor(index, divisor);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9641,7 +9325,7 @@ void __stdcall glBindTransformFeedback(GLenum target, GLuint id)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9668,7 +9352,7 @@ void __stdcall glDeleteTransformFeedbacks(GLsizei n, const GLuint* ids)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9695,7 +9379,7 @@ void __stdcall glGenTransformFeedbacks(GLsizei n, GLuint* ids)
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9719,7 +9403,7 @@ GLboolean __stdcall glIsTransformFeedback(GLuint id)
             return ((context->getTransformFeedback(id) != NULL) ? GL_TRUE : GL_FALSE);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -9754,7 +9438,7 @@ void __stdcall glPauseTransformFeedback(void)
             transformFeedback->pause();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9787,7 +9471,7 @@ void __stdcall glResumeTransformFeedback(void)
             transformFeedback->resume();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9813,7 +9497,7 @@ void __stdcall glGetProgramBinary(GLuint program, GLsizei bufSize, GLsizei* leng
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9839,7 +9523,7 @@ void __stdcall glProgramBinary(GLuint program, GLenum binaryFormat, const GLvoid
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9865,7 +9549,7 @@ void __stdcall glProgramParameteri(GLuint program, GLenum pname, GLint value)
             UNIMPLEMENTED();
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9896,7 +9580,7 @@ void __stdcall glInvalidateFramebuffer(GLenum target, GLsizei numAttachments, co
             context->invalidateFrameBuffer(target, numAttachments, attachments, 0, 0, maxDimension, maxDimension);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9927,7 +9611,7 @@ void __stdcall glInvalidateSubFramebuffer(GLenum target, GLsizei numAttachments,
             context->invalidateFrameBuffer(target, numAttachments, attachments, x, y, width, height);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -9975,7 +9659,7 @@ void __stdcall glTexStorage2D(GLenum target, GLsizei levels, GLenum internalform
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10024,7 +9708,7 @@ void __stdcall glTexStorage3D(GLenum target, GLsizei levels, GLenum internalform
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10078,7 +9762,7 @@ void __stdcall glGetInternalformativ(GLenum target, GLenum internalformat, GLenu
             }
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10111,7 +9795,7 @@ void __stdcall glBlitFramebufferANGLE(GLint srcX0, GLint srcY0, GLint srcX1, GLi
                                      mask, filter);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10129,7 +9813,7 @@ void __stdcall glTexImage3DOES(GLenum target, GLint level, GLenum internalformat
     {
         UNIMPLEMENTED();   // FIXME
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10169,7 +9853,7 @@ void __stdcall glGetProgramBinaryOES(GLuint program, GLsizei bufSize, GLsizei *l
             *binaryFormat = GL_PROGRAM_BINARY_ANGLE;
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10202,7 +9886,7 @@ void __stdcall glProgramBinaryOES(GLuint program, GLenum binaryFormat,
             context->setProgramBinary(program, binary, length);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10260,7 +9944,7 @@ void __stdcall glDrawBuffersEXT(GLsizei n, const GLenum *bufs)
             }
         }
     }
-    catch (std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10301,7 +9985,7 @@ void __stdcall glGetBufferPointervOES(GLenum target, GLenum pname, void** params
             *params = buffer->mapPointer();
         }
     }
-    catch (std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10342,7 +10026,7 @@ void * __stdcall glMapBufferOES(GLenum target, GLenum access)
             return buffer->mapRange(0, buffer->size(), GL_MAP_WRITE_BIT);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, reinterpret_cast<GLvoid*>(NULL));
     }
@@ -10379,7 +10063,7 @@ GLboolean __stdcall glUnmapBufferOES(GLenum target)
             return GL_TRUE;
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, GL_FALSE);
     }
@@ -10466,7 +10150,7 @@ void* __stdcall glMapBufferRangeEXT (GLenum target, GLintptr offset, GLsizeiptr 
             return buffer->mapRange(offset, length, access);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, reinterpret_cast<GLvoid*>(NULL));
     }
@@ -10519,7 +10203,7 @@ void __stdcall glFlushMappedBufferRangeEXT (GLenum target, GLintptr offset, GLsi
             // We do not currently support a non-trivial implementation of FlushMappedBufferRange
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY);
     }
@@ -10605,7 +10289,7 @@ bool __stdcall glBindTexImage(egl::Surface *surface)
             textureObject->bindTexImage(surface);
         }
     }
-    catch(std::bad_alloc&)
+    catch (...)
     {
         return gl::error(GL_OUT_OF_MEMORY, false);
     }

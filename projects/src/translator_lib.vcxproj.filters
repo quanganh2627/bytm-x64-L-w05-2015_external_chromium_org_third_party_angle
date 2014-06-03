@@ -96,9 +96,6 @@
     <ClInclude Include="..\..\src\common\utilities.h">
       <Filter>src\common</Filter>
     </ClInclude>
-    <ClCompile Include="..\..\src\common\shadervars.cpp">
-      <Filter>src\common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\common\blocklayout.cpp">
       <Filter>src\common</Filter>
     </ClCompile>
@@ -165,9 +162,9 @@
     <ClCompile Include="..\..\src\compiler\translator\ParseContext.cpp">
       <Filter>src\compiler\translator</Filter>
     </ClCompile>
-    <ClInclude Include="..\..\src\compiler\translator\ValidateOutputs.h">
+    <ClCompile Include="..\..\src\compiler\translator\Types.cpp">
       <Filter>src\compiler\translator</Filter>
-    </ClInclude>
+    </ClCompile>
     <ClCompile Include="..\..\src\compiler\translator\RemoveTree.cpp">
       <Filter>src\compiler\translator</Filter>
     </ClCompile>
@@ -247,6 +244,9 @@
       <Filter>src\compiler\translator</Filter>
     </ClCompile>
     <ClInclude Include="..\..\src\compiler\translator\InitializeDll.h">
+      <Filter>src\compiler\translator</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\compiler\translator\ValidateOutputs.h">
       <Filter>src\compiler\translator</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\compiler\translator\InitializeVariables.h">

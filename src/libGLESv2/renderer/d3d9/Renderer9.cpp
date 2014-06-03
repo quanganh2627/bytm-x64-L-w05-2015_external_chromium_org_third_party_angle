@@ -35,6 +35,7 @@
 #include "libEGL/Display.h"
 
 #include "third_party/trace_event/trace_event.h"
+#include "third_party/systeminfo/SystemInfo.h"
 
 // Can also be enabled by defining FORCE_REF_RAST in the project's predefined macros
 #define REF_RAST 0
@@ -91,7 +92,7 @@ enum
     MAX_TEXTURE_IMAGE_UNITS_VTF_SM3 = 4
 };
 
-Renderer9::Renderer9(egl::Display *display, HDC hDc, bool softwareDevice) : Renderer(display), mDc(hDc), mSoftwareDevice(softwareDevice)
+Renderer9::Renderer9(egl::Display *display, HDC hDc) : Renderer(display), mDc(hDc)
 {
     mD3d9Module = NULL;
 
@@ -131,6 +132,7 @@ Renderer9::Renderer9(egl::Display *display, HDC hDc, bool softwareDevice) : Rend
 
     mAppliedVertexShader = NULL;
     mAppliedPixelShader = NULL;
+    mAppliedProgramSerial = 0;
 }
 
 Renderer9::~Renderer9()
@@ -180,16 +182,8 @@ EGLint Renderer9::initialize()
         return EGL_NOT_INITIALIZED;
     }
 
-    if (mSoftwareDevice)
-    {
-        TRACE_EVENT0("gpu", "GetModuleHandle_swiftshader");
-        mD3d9Module = GetModuleHandle(TEXT("swiftshader_d3d9.dll"));
-    }
-    else
-    {
-        TRACE_EVENT0("gpu", "GetModuleHandle_d3d9");
-        mD3d9Module = GetModuleHandle(TEXT("d3d9.dll"));
-    }
+    TRACE_EVENT0("gpu", "GetModuleHandle_d3d9");
+    mD3d9Module = GetModuleHandle(TEXT("d3d9.dll"));
 
     if (mD3d9Module == NULL)
     {
@@ -274,7 +268,7 @@ EGLint Renderer9::initialize()
     mSupportsNonPower2Textures = !(mDeviceCaps.TextureCaps & D3DPTEXTURECAPS_POW2) &&
         !(mDeviceCaps.TextureCaps & D3DPTEXTURECAPS_CUBEMAP_POW2) &&
         !(mDeviceCaps.TextureCaps & D3DPTEXTURECAPS_NONPOW2CONDITIONAL) &&
-        !(getComparableOSVersion() < versionWindowsVista && mAdapterIdentifier.VendorId == VENDOR_ID_AMD);
+        !(!isWindowsVistaOrGreater() && mAdapterIdentifier.VendorId == VENDOR_ID_AMD);
 
     // Must support a minimum of 2:1 anisotropy for max anisotropy to be considered supported, per the spec
     mSupportsTextureFilterAnisotropy = ((mDeviceCaps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY) && (mDeviceCaps.MaxAnisotropy >= 2));
@@ -683,6 +677,7 @@ IDirect3DQuery9* Renderer9::allocateEventQuery()
     if (mEventQueryPool.empty())
     {
         HRESULT result = mDevice->CreateQuery(D3DQUERYTYPE_EVENT, &query);
+        UNUSED_ASSERTION_VARIABLE(result);
         ASSERT(SUCCEEDED(result));
     }
     else
@@ -1744,25 +1739,29 @@ void Renderer9::applyShaders(gl::ProgramBinary *programBinary, bool rasterizerDi
     IDirect3DVertexShader9 *vertexShader = (vertexExe ? ShaderExecutable9::makeShaderExecutable9(vertexExe)->getVertexShader() : NULL);
     IDirect3DPixelShader9 *pixelShader = (pixelExe ? ShaderExecutable9::makeShaderExecutable9(pixelExe)->getPixelShader() : NULL);
 
-    bool dirtyUniforms = false;
-
     if (vertexShader != mAppliedVertexShader)
     {
         mDevice->SetVertexShader(vertexShader);
         mAppliedVertexShader = vertexShader;
-        dirtyUniforms = true;
     }
 
     if (pixelShader != mAppliedPixelShader)
     {
         mDevice->SetPixelShader(pixelShader);
         mAppliedPixelShader = pixelShader;
-        dirtyUniforms = true;
     }
 
-    if (dirtyUniforms)
+    // D3D9 has a quirk where creating multiple shaders with the same content
+    // can return the same shader pointer. Because GL programs store different data
+    // per-program, checking the program serial guarantees we upload fresh
+    // uniform data even if our shader pointers are the same.
+    // https://code.google.com/p/angleproject/issues/detail?id=661
+    unsigned int programSerial = programBinary->getSerial();
+    if (programSerial != mAppliedProgramSerial)
     {
         programBinary->dirtyAllUniforms();
+        mDxUniformsDirty = true;
+        mAppliedProgramSerial = programSerial;
     }
 }
 
@@ -2120,6 +2119,7 @@ void Renderer9::markAllStateDirty()
     mAppliedIBSerial = 0;
     mAppliedVertexShader = NULL;
     mAppliedPixelShader = NULL;
+    mAppliedProgramSerial = 0;
     mDxUniformsDirty = true;
 
     mVertexDeclarationCache.markStateDirty();
@@ -3380,19 +3380,50 @@ ShaderExecutable *Renderer9::compileToExecutable(gl::InfoLog &infoLog, const cha
         return NULL;
     }
 
-    UINT optimizationFlags = ANGLE_COMPILE_OPTIMIZATION_LEVEL;
+    UINT flags = ANGLE_COMPILE_OPTIMIZATION_LEVEL;
 
     if (workaround == ANGLE_D3D_WORKAROUND_SKIP_OPTIMIZATION)
     {
-        optimizationFlags = D3DCOMPILE_SKIP_OPTIMIZATION;
+        flags = D3DCOMPILE_SKIP_OPTIMIZATION;
     }
     else if (workaround == ANGLE_D3D_WORKAROUND_MAX_OPTIMIZATION)
     {
-        optimizationFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
+        flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
     }
     else ASSERT(workaround == ANGLE_D3D_WORKAROUND_NONE);
 
-    ID3DBlob *binary = (ID3DBlob*)mCompiler.compileToBinary(infoLog, shaderHLSL, profile, optimizationFlags, true);
+    if (gl::perfActive())
+    {
+#ifndef NDEBUG
+        flags = D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+        flags |= D3DCOMPILE_DEBUG;
+
+        std::string sourcePath = getTempPath();
+        std::string sourceText = std::string("#line 2 \"") + sourcePath + std::string("\"\n\n") + std::string(shaderHLSL);
+        writeFile(sourcePath.c_str(), sourceText.c_str(), sourceText.size());
+    }
+
+    // Sometimes D3DCompile will fail with the default compilation flags for complicated shaders when it would otherwise pass with alternative options.
+    // Try the default flags first and if compilation fails, try some alternatives.
+    const UINT extraFlags[] =
+    {
+        flags,
+        flags | D3DCOMPILE_AVOID_FLOW_CONTROL,
+        flags | D3DCOMPILE_PREFER_FLOW_CONTROL
+    };
+
+    const static char *extraFlagNames[] =
+    {
+        "default",
+        "avoid flow control",
+        "prefer flow control"
+    };
+
+    int attempts = ArraySize(extraFlags);
+
+    ID3DBlob *binary = (ID3DBlob*)mCompiler.compileToBinary(infoLog, shaderHLSL, profile, extraFlags, extraFlagNames, attempts);
     if (!binary)
     {
         return NULL;

@@ -763,18 +763,42 @@ GLuint Context::getSamplerHandle(GLuint textureUnit) const
     return mState.samplers[textureUnit];
 }
 
+unsigned int Context::getActiveSampler() const
+{
+    return mState.activeSampler;
+}
+
 GLuint Context::getArrayBufferHandle() const
 {
     return mState.arrayBuffer.id();
 }
 
-GLuint Context::getActiveQuery(GLenum target) const
+bool Context::isQueryActive() const
+{
+    for (State::ActiveQueryMap::const_iterator i = mState.activeQueries.begin();
+         i != mState.activeQueries.end(); i++)
+    {
+        if (i->second.get() != NULL)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+const Query *Context::getActiveQuery(GLenum target) const
 {
     // All query types should already exist in the activeQueries map
     ASSERT(mState.activeQueries.find(target) != mState.activeQueries.end());
 
-    const Query *queryObject = mState.activeQueries.at(target).get();
-    return queryObject ? queryObject->id() : 0;
+    return mState.activeQueries.at(target).get();
+}
+
+GLuint Context::getActiveQueryId(GLenum target) const
+{
+    const Query *query = getActiveQuery(target);
+    return (query ? query->id() : 0u);
 }
 
 void Context::setEnableVertexAttribArray(unsigned int attribNum, bool enabled)
@@ -942,7 +966,7 @@ void Context::deleteBuffer(GLuint buffer)
     {
         detachBuffer(buffer);
     }
-    
+
     mResourceManager->deleteBuffer(buffer);
 }
 
@@ -972,7 +996,7 @@ void Context::deleteRenderbuffer(GLuint renderbuffer)
     {
         detachRenderbuffer(renderbuffer);
     }
-    
+
     mResourceManager->deleteRenderbuffer(renderbuffer);
 }
 
@@ -1311,7 +1335,7 @@ void Context::useProgram(GLuint program)
             newProgram->addRef();
             mCurrentProgramBinary.set(newProgram->getProgramBinary());
         }
-        
+
         if (oldProgram)
         {
             oldProgram->release();
@@ -1356,42 +1380,8 @@ void Context::bindTransformFeedback(GLuint transformFeedback)
 
 void Context::beginQuery(GLenum target, GLuint query)
 {
-    // From EXT_occlusion_query_boolean: If BeginQueryEXT is called with an <id>  
-    // of zero, if the active query object name for <target> is non-zero (for the  
-    // targets ANY_SAMPLES_PASSED_EXT and ANY_SAMPLES_PASSED_CONSERVATIVE_EXT, if  
-    // the active query for either target is non-zero), if <id> is the name of an 
-    // existing query object whose type does not match <target>, or if <id> is the
-    // active query object name for any query type, the error INVALID_OPERATION is
-    // generated.
-
-    // Ensure no other queries are active
-    // NOTE: If other queries than occlusion are supported, we will need to check
-    // separately that:
-    //    a) The query ID passed is not the current active query for any target/type
-    //    b) There are no active queries for the requested target (and in the case
-    //       of GL_ANY_SAMPLES_PASSED_EXT and GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT,
-    //       no query may be active for either if glBeginQuery targets either.
-    for (State::ActiveQueryMap::iterator i = mState.activeQueries.begin(); i != mState.activeQueries.end(); i++)
-    {
-        if (i->second.get() != NULL)
-        {
-            return gl::error(GL_INVALID_OPERATION);
-        }
-    }
-
     Query *queryObject = getQuery(query, true, target);
-
-    // check that name was obtained with glGenQueries
-    if (!queryObject)
-    {
-        return gl::error(GL_INVALID_OPERATION);
-    }
-
-    // check for type mismatch
-    if (queryObject->getType() != target)
-    {
-        return gl::error(GL_INVALID_OPERATION);
-    }
+    ASSERT(queryObject);
 
     // set query as active for specified target
     mState.activeQueries[target].set(queryObject);
@@ -1403,11 +1393,7 @@ void Context::beginQuery(GLenum target, GLuint query)
 void Context::endQuery(GLenum target)
 {
     Query *queryObject = mState.activeQueries[target].get();
-
-    if (queryObject == NULL)
-    {
-        return gl::error(GL_INVALID_OPERATION);
-    }
+    ASSERT(queryObject);
 
     queryObject->end();
 
@@ -1645,7 +1631,7 @@ Texture *Context::getSamplerTexture(unsigned int sampler, TextureType type) cons
     return mState.samplerTexture[type][sampler].get();
 }
 
-bool Context::getBooleanv(GLenum pname, GLboolean *params)
+void Context::getBooleanv(GLenum pname, GLboolean *params)
 {
     switch (pname)
     {
@@ -1671,13 +1657,12 @@ bool Context::getBooleanv(GLenum pname, GLboolean *params)
       case GL_TRANSFORM_FEEDBACK_ACTIVE: *params = getCurrentTransformFeedback()->isStarted(); break;
       case GL_TRANSFORM_FEEDBACK_PAUSED: *params = getCurrentTransformFeedback()->isPaused();  break;
       default:
-        return false;
+        UNREACHABLE();
+        break;
     }
-
-    return true;
 }
 
-bool Context::getFloatv(GLenum pname, GLfloat *params)
+void Context::getFloatv(GLenum pname, GLfloat *params)
 {
     // Please note: DEPTH_CLEAR_VALUE is included in our internal getFloatv implementation
     // because it is stored as a float, despite the fact that the GL ES 2.0 spec names
@@ -1715,41 +1700,30 @@ bool Context::getFloatv(GLenum pname, GLfloat *params)
         params[3] = mState.blendColor.alpha;
         break;
       case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:
-        if (!supportsTextureFilterAnisotropy())
-        {
-            return false;
-        }
+        ASSERT(supportsTextureFilterAnisotropy());
         *params = mMaxTextureAnisotropy;
         break;
       default:
-        return false;
+        UNREACHABLE();
+        break;
     }
-
-    return true;
 }
 
-bool Context::getIntegerv(GLenum pname, GLint *params)
+void Context::getIntegerv(GLenum pname, GLint *params)
 {
     if (pname >= GL_DRAW_BUFFER0_EXT && pname <= GL_DRAW_BUFFER15_EXT)
     {
         unsigned int colorAttachment = (pname - GL_DRAW_BUFFER0_EXT);
-
-        if (colorAttachment >= mRenderer->getMaxRenderTargets())
-        {
-            // return true to stop further operation in the parent call
-            return gl::error(GL_INVALID_OPERATION, true);
-        }
-
+        ASSERT(colorAttachment < mRenderer->getMaxRenderTargets());
         Framebuffer *framebuffer = getDrawFramebuffer();
-
         *params = framebuffer->getDrawBufferState(colorAttachment);
-        return true;
+        return;
     }
 
     // Please note: DEPTH_CLEAR_VALUE is not included in our internal getIntegerv implementation
     // because it is stored as a float, despite the fact that the GL ES 2.0 spec names
     // GetIntegerv as its native query function. As it would require conversion in any
-    // case, this should make no difference to the calling application. You may find it in 
+    // case, this should make no difference to the calling application. You may find it in
     // Context::getFloatv.
     switch (pname)
     {
@@ -1757,6 +1731,7 @@ bool Context::getIntegerv(GLenum pname, GLint *params)
       case GL_MAX_VERTEX_UNIFORM_VECTORS:               *params = mRenderer->getMaxVertexUniformVectors();              break;
       case GL_MAX_VERTEX_UNIFORM_COMPONENTS:            *params = mRenderer->getMaxVertexUniformVectors() * 4;          break;
       case GL_MAX_VARYING_VECTORS:                      *params = mRenderer->getMaxVaryingVectors();                    break;
+      case GL_MAX_VARYING_COMPONENTS:                   *params = mRenderer->getMaxVaryingVectors() * 4;                break;
       case GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS:         *params = mRenderer->getMaxCombinedTextureImageUnits();         break;
       case GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS:           *params = mRenderer->getMaxVertexTextureImageUnits();           break;
       case GL_MAX_TEXTURE_IMAGE_UNITS:                  *params = gl::MAX_TEXTURE_IMAGE_UNITS;                          break;
@@ -1820,24 +1795,13 @@ bool Context::getIntegerv(GLenum pname, GLint *params)
       case GL_MAX_TRANSFORM_FEEDBACK_INTERLEAVED_COMPONENTS: *params = mRenderer->getMaxTransformFeedbackInterleavedComponents(); break;
       case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_ATTRIBS:       *params = mRenderer->getMaxTransformFeedbackBuffers();               break;
       case GL_MAX_TRANSFORM_FEEDBACK_SEPARATE_COMPONENTS:    *params = mRenderer->getMaxTransformFeedbackSeparateComponents();    break;
-      case GL_NUM_COMPRESSED_TEXTURE_FORMATS:   
+      case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
         params[0] = mNumCompressedTextureFormats;
         break;
       case GL_MAX_SAMPLES_ANGLE:
-        {
-            GLsizei maxSamples = getMaxSupportedSamples();
-            if (maxSamples != 0)
-            {
-                *params = maxSamples;
-            }
-            else
-            {
-                return false;
-            }
-
-            break;
-        }
-      case GL_SAMPLE_BUFFERS:                   
+        *params = static_cast<GLint>(getMaxSupportedSamples());
+        break;
+      case GL_SAMPLE_BUFFERS:
       case GL_SAMPLES:
         {
             gl::Framebuffer *framebuffer = getDrawFramebuffer();
@@ -1860,7 +1824,7 @@ bool Context::getIntegerv(GLenum pname, GLint *params)
                     break;
                 }
             }
-            else 
+            else
             {
                 *params = 0;
             }
@@ -1870,13 +1834,11 @@ bool Context::getIntegerv(GLenum pname, GLint *params)
       case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
         {
             GLenum internalFormat, format, type;
-            if (getCurrentReadFormatType(&internalFormat, &format, &type))
-            {
-                if (pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT)
-                    *params = format;
-                else
-                    *params = type;
-            }
+            getCurrentReadFormatType(&internalFormat, &format, &type);
+            if (pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT)
+                *params = format;
+            else
+                *params = type;
         }
         break;
       case GL_MAX_VIEWPORT_DIMS:
@@ -1971,48 +1933,20 @@ bool Context::getIntegerv(GLenum pname, GLint *params)
         }
         break;
       case GL_TEXTURE_BINDING_2D:
-        {
-            if (mState.activeSampler > mRenderer->getMaxCombinedTextureImageUnits() - 1)
-            {
-                gl::error(GL_INVALID_OPERATION);
-                return false;
-            }
-
-            *params = mState.samplerTexture[TEXTURE_2D][mState.activeSampler].id();
-        }
+        ASSERT(mState.activeSampler < mRenderer->getMaxCombinedTextureImageUnits());
+        *params = mState.samplerTexture[TEXTURE_2D][mState.activeSampler].id();
         break;
       case GL_TEXTURE_BINDING_CUBE_MAP:
-        {
-            if (mState.activeSampler > mRenderer->getMaxCombinedTextureImageUnits() - 1)
-            {
-                gl::error(GL_INVALID_OPERATION);
-                return false;
-            }
-
-            *params = mState.samplerTexture[TEXTURE_CUBE][mState.activeSampler].id();
-        }
+        ASSERT(mState.activeSampler < mRenderer->getMaxCombinedTextureImageUnits());
+        *params = mState.samplerTexture[TEXTURE_CUBE][mState.activeSampler].id();
         break;
       case GL_TEXTURE_BINDING_3D:
-        {
-            if (mState.activeSampler > mRenderer->getMaxCombinedTextureImageUnits() - 1)
-            {
-                gl::error(GL_INVALID_OPERATION);
-                return false;
-            }
-
-            *params = mState.samplerTexture[TEXTURE_3D][mState.activeSampler].id();
-        }
+        ASSERT(mState.activeSampler < mRenderer->getMaxCombinedTextureImageUnits());
+        *params = mState.samplerTexture[TEXTURE_3D][mState.activeSampler].id();
         break;
       case GL_TEXTURE_BINDING_2D_ARRAY:
-        {
-            if (mState.activeSampler > mRenderer->getMaxCombinedTextureImageUnits() - 1)
-            {
-                gl::error(GL_INVALID_OPERATION);
-                return false;
-            }
-
-            *params = mState.samplerTexture[TEXTURE_2D_ARRAY][mState.activeSampler].id();
-        }
+        ASSERT(mState.activeSampler < mRenderer->getMaxCombinedTextureImageUnits());
+        *params = mState.samplerTexture[TEXTURE_2D_ARRAY][mState.activeSampler].id();
         break;
       case GL_RESET_NOTIFICATION_STRATEGY_EXT:
         *params = mResetStrategy;
@@ -2045,13 +1979,12 @@ bool Context::getIntegerv(GLenum pname, GLint *params)
         *params = static_cast<GLint>(getNumExtensions());
         break;
       default:
-        return false;
+        UNREACHABLE();
+        break;
     }
-
-    return true;
 }
 
-bool Context::getInteger64v(GLenum pname, GLint64 *params)
+void Context::getInteger64v(GLenum pname, GLint64 *params)
 {
     switch (pname)
     {
@@ -2080,10 +2013,9 @@ bool Context::getInteger64v(GLenum pname, GLint64 *params)
         *params = 0;
         break;
       default:
-        return false;
+        UNREACHABLE();
+        break;
     }
-
-    return true;
 }
 
 bool Context::getIndexedIntegerv(GLenum target, GLuint index, GLint *data)
@@ -2156,7 +2088,7 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
     // Please note: the query type returned for DEPTH_CLEAR_VALUE in this implementation
     // is FLOAT rather than INT, as would be suggested by the GL ES 2.0 spec. This is due
     // to the fact that it is stored internally as a float, and so would require conversion
-    // if returned from Context::getIntegerv. Since this conversion is already implemented 
+    // if returned from Context::getIntegerv. Since this conversion is already implemented
     // in the case that one calls glGetIntegerv to retrieve a float-typed state variable, we
     // place DEPTH_CLEAR_VALUE with the floats. This should make no difference to the calling
     // application.
@@ -2187,7 +2119,9 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
       case GL_NUM_SHADER_BINARY_FORMATS:
       case GL_NUM_COMPRESSED_TEXTURE_FORMATS:
       case GL_ARRAY_BUFFER_BINDING:
-      case GL_FRAMEBUFFER_BINDING:
+      //case GL_FRAMEBUFFER_BINDING: // equivalent to DRAW_FRAMEBUFFER_BINDING_ANGLE
+      case GL_DRAW_FRAMEBUFFER_BINDING_ANGLE:
+      case GL_READ_FRAMEBUFFER_BINDING_ANGLE:
       case GL_RENDERBUFFER_BINDING:
       case GL_CURRENT_PROGRAM:
       case GL_PACK_ALIGNMENT:
@@ -2247,6 +2181,20 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
       case GL_MAX_SAMPLES_ANGLE:
         {
             if (getMaxSupportedSamples() != 0)
+            {
+                *type = GL_INT;
+                *numParams = 1;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
+      case GL_PIXEL_PACK_BUFFER_BINDING:
+      case GL_PIXEL_UNPACK_BUFFER_BINDING:
+        {
+            if (supportsPBOs())
             {
                 *type = GL_INT;
                 *numParams = 1;
@@ -2343,8 +2291,6 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
       case GL_TRANSFORM_FEEDBACK_BINDING:
       case GL_COPY_READ_BUFFER_BINDING:
       case GL_COPY_WRITE_BUFFER_BINDING:
-      case GL_PIXEL_PACK_BUFFER_BINDING:
-      case GL_PIXEL_UNPACK_BUFFER_BINDING:
       case GL_TEXTURE_BINDING_3D:
       case GL_TEXTURE_BINDING_2D_ARRAY:
       case GL_MAX_3D_TEXTURE_SIZE:
@@ -2352,6 +2298,7 @@ bool Context::getQueryParameterInfo(GLenum pname, GLenum *type, unsigned int *nu
       case GL_MAX_VERTEX_UNIFORM_BLOCKS:
       case GL_MAX_FRAGMENT_UNIFORM_BLOCKS:
       case GL_MAX_COMBINED_UNIFORM_BLOCKS:
+      case GL_MAX_VARYING_COMPONENTS:
       case GL_VERTEX_ARRAY_BINDING:
       case GL_MAX_VERTEX_UNIFORM_COMPONENTS:
       case GL_MAX_FRAGMENT_UNIFORM_COMPONENTS:
@@ -2460,7 +2407,7 @@ void Context::applyState(GLenum drawMode)
     {
         if (mState.sampleCoverageValue != 0)
         {
-            
+
             float threshold = 0.5f;
 
             for (int i = 0; i < samples; ++i)
@@ -2503,113 +2450,87 @@ void Context::applyShaders(ProgramBinary *programBinary, bool transformFeedbackA
     programBinary->applyUniforms();
 }
 
-bool Context::getCurrentTextureAndSamplerState(ProgramBinary *programBinary, SamplerType type, int index, Texture **outTexture,
-                                               TextureType *outTextureType, SamplerState *outSampler)
+size_t Context::getCurrentTexturesAndSamplerStates(ProgramBinary *programBinary, SamplerType type, Texture **outTextures,
+                                                   TextureType *outTextureTypes, SamplerState *outSamplers)
 {
-    int textureUnit = programBinary->getSamplerMapping(type, index);   // OpenGL texture image unit index
-
-    if (textureUnit != -1)
+    size_t samplerRange = programBinary->getUsedSamplerRange(type);
+    for (size_t i = 0; i < samplerRange; i++)
     {
-        TextureType textureType = programBinary->getSamplerTextureType(type, index);
-        Texture *texture = getSamplerTexture(textureUnit, textureType);
-
-        SamplerState samplerState;
-        texture->getSamplerState(&samplerState);
-
-        if (mState.samplers[textureUnit] != 0)
+        outTextureTypes[i] = programBinary->getSamplerTextureType(type, i);
+        GLint textureUnit = programBinary->getSamplerMapping(type, i);   // OpenGL texture image unit index
+        if (textureUnit != -1)
         {
-            Sampler *samplerObject = getSampler(mState.samplers[textureUnit]);
-            samplerObject->getState(&samplerState);
+            outTextures[i] = getSamplerTexture(textureUnit, outTextureTypes[i]);
+            outTextures[i]->getSamplerState(&outSamplers[i]);
+            if (mState.samplers[textureUnit] != 0)
+            {
+                Sampler *samplerObject = getSampler(mState.samplers[textureUnit]);
+                samplerObject->getState(&outSamplers[i]);
+            }
         }
-
-        *outTexture = texture;
-        *outTextureType = textureType;
-        *outSampler = samplerState;
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-void Context::generateSwizzles(ProgramBinary *programBinary)
-{
-    generateSwizzles(programBinary, SAMPLER_PIXEL);
-
-    if (mSupportsVertexTexture)
-    {
-        generateSwizzles(programBinary, SAMPLER_VERTEX);
-    }
-}
-
-void Context::generateSwizzles(ProgramBinary *programBinary, SamplerType type)
-{
-    // Range of Direct3D samplers of given sampler type
-    int samplerRange = programBinary->getUsedSamplerRange(type);
-    for (int samplerIndex = 0; samplerIndex < samplerRange; samplerIndex++)
-    {
-        Texture *texture = NULL;
-        TextureType textureType;
-        SamplerState samplerState;
-        if (getCurrentTextureAndSamplerState(programBinary, type, samplerIndex, &texture, &textureType, &samplerState) && texture->isSwizzled())
+        else
         {
-            mRenderer->generateSwizzle(texture);
+            outTextures[i] = NULL;
         }
     }
+
+    return samplerRange;
 }
 
-// Applies the textures and sampler states to the Direct3D 9 device
-void Context::applyTextures(ProgramBinary *programBinary)
+void Context::generateSwizzles(Texture *textures[], size_t count)
 {
-    applyTextures(programBinary, SAMPLER_PIXEL);
-
-    if (mSupportsVertexTexture)
+    for (size_t i = 0; i < count; i++)
     {
-        applyTextures(programBinary, SAMPLER_VERTEX);
+        if (textures[i] && textures[i]->isSwizzled())
+        {
+            mRenderer->generateSwizzle(textures[i]);
+        }
     }
 }
 
 // For each Direct3D sampler of either the pixel or vertex stage,
 // looks up the corresponding OpenGL texture image unit and texture type,
 // and sets the texture and its addressing/filtering state (or NULL when inactive).
-void Context::applyTextures(ProgramBinary *programBinary, SamplerType type)
+void Context::applyTextures(SamplerType shaderType, Texture *textures[], TextureType *textureTypes, SamplerState *samplers,
+                            size_t textureCount, const FramebufferTextureSerialArray& framebufferSerials,
+                            size_t framebufferSerialCount)
 {
-    FramebufferTextureSerialSet boundFramebufferTextures = getBoundFramebufferTextureSerials();
-
     // Range of Direct3D samplers of given sampler type
-    int samplerCount = (type == SAMPLER_PIXEL) ? MAX_TEXTURE_IMAGE_UNITS : mRenderer->getMaxVertexTextureImageUnits();
-    int samplerRange = programBinary->getUsedSamplerRange(type);
+    size_t samplerCount = (shaderType == SAMPLER_PIXEL) ? MAX_TEXTURE_IMAGE_UNITS
+                                                        : mRenderer->getMaxVertexTextureImageUnits();
 
-    for (int samplerIndex = 0; samplerIndex < samplerRange; samplerIndex++)
+    for (size_t samplerIndex = 0; samplerIndex < textureCount; samplerIndex++)
     {
-        Texture *texture = NULL;
-        TextureType textureType;
-        SamplerState samplerState;
-        if (getCurrentTextureAndSamplerState(programBinary, type, samplerIndex, &texture, &textureType, &samplerState))
+        Texture *texture = textures[samplerIndex];
+        const SamplerState &sampler = samplers[samplerIndex];
+        TextureType textureType = textureTypes[samplerIndex];
+
+        if (texture)
         {
-            if (texture->isSamplerComplete(samplerState) &&
-                boundFramebufferTextures.find(texture->getTextureSerial()) == boundFramebufferTextures.end())
+            // TODO: std::binary_search may become unavailable using older versions of GCC
+            if (texture->isSamplerComplete(sampler) &&
+                !std::binary_search(framebufferSerials.begin(), framebufferSerials.begin() + framebufferSerialCount, texture->getTextureSerial()))
             {
-                mRenderer->setSamplerState(type, samplerIndex, samplerState);
-                mRenderer->setTexture(type, samplerIndex, texture);
+                mRenderer->setSamplerState(shaderType, samplerIndex, sampler);
+                mRenderer->setTexture(shaderType, samplerIndex, texture);
                 texture->resetDirty();
             }
             else
             {
-                mRenderer->setTexture(type, samplerIndex, getIncompleteTexture(textureType));
+                Texture *incompleteTexture = getIncompleteTexture(textureType);
+                mRenderer->setTexture(shaderType, samplerIndex, incompleteTexture);
+                incompleteTexture->resetDirty();
             }
         }
         else
         {
-            mRenderer->setTexture(type, samplerIndex, NULL);
+            mRenderer->setTexture(shaderType, samplerIndex, NULL);
         }
     }
 
-    for (int samplerIndex = samplerRange; samplerIndex < samplerCount; samplerIndex++)
+    for (size_t samplerIndex = textureCount; samplerIndex < samplerCount; samplerIndex++)
     {
-        mRenderer->setTexture(type, samplerIndex, NULL);
+        mRenderer->setTexture(shaderType, samplerIndex, NULL);
     }
 }
 
@@ -2957,7 +2878,18 @@ void Context::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instan
     ProgramBinary *programBinary = getCurrentProgramBinary();
     programBinary->applyUniforms();
 
-    generateSwizzles(programBinary);
+    Texture *vsTextures[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    TextureType vsTextureTypes[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    SamplerState vsSamplers[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    size_t vsTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers);
+
+    Texture *psTextures[MAX_TEXTURE_IMAGE_UNITS];
+    TextureType psTextureTypes[MAX_TEXTURE_IMAGE_UNITS];
+    SamplerState psSamplers[MAX_TEXTURE_IMAGE_UNITS];
+    size_t psTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers);
+
+    generateSwizzles(vsTextures, vsTextureCount);
+    generateSwizzles(psTextures, psTextureCount);
 
     if (!mRenderer->applyPrimitiveType(mode, count))
     {
@@ -2980,7 +2912,12 @@ void Context::drawArrays(GLenum mode, GLint first, GLsizei count, GLsizei instan
     bool transformFeedbackActive = applyTransformFeedbackBuffers();
 
     applyShaders(programBinary, transformFeedbackActive);
-    applyTextures(programBinary);
+
+    FramebufferTextureSerialArray frameBufferSerials;
+    size_t framebufferSerialCount = getBoundFramebufferTextureSerials(&frameBufferSerials);
+
+    applyTextures(SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers, vsTextureCount, frameBufferSerials, framebufferSerialCount);
+    applyTextures(SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers, psTextureCount, frameBufferSerials, framebufferSerialCount);
 
     if (!applyUniformBuffers())
     {
@@ -3019,7 +2956,18 @@ void Context::drawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid
     ProgramBinary *programBinary = getCurrentProgramBinary();
     programBinary->applyUniforms();
 
-    generateSwizzles(programBinary);
+    Texture *vsTextures[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    TextureType vsTextureTypes[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    SamplerState vsSamplers[IMPLEMENTATION_MAX_VERTEX_TEXTURE_IMAGE_UNITS];
+    size_t vsTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers);
+
+    Texture *psTextures[MAX_TEXTURE_IMAGE_UNITS];
+    TextureType psTextureTypes[MAX_TEXTURE_IMAGE_UNITS];
+    SamplerState psSamplers[MAX_TEXTURE_IMAGE_UNITS];
+    size_t psTextureCount = getCurrentTexturesAndSamplerStates(programBinary, SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers);
+
+    generateSwizzles(vsTextures, vsTextureCount);
+    generateSwizzles(psTextures, psTextureCount);
 
     if (!mRenderer->applyPrimitiveType(mode, count))
     {
@@ -3053,7 +3001,12 @@ void Context::drawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid
     ASSERT(!transformFeedbackActive);
 
     applyShaders(programBinary, transformFeedbackActive);
-    applyTextures(programBinary);
+
+    FramebufferTextureSerialArray frameBufferSerials;
+    size_t framebufferSerialCount = getBoundFramebufferTextureSerials(&frameBufferSerials);
+
+    applyTextures(SAMPLER_VERTEX, vsTextures, vsTextureTypes, vsSamplers, vsTextureCount, frameBufferSerials, framebufferSerialCount);
+    applyTextures(SAMPLER_PIXEL, psTextures, psTextureTypes, psSamplers, psTextureCount, frameBufferSerials, framebufferSerialCount);
 
     if (!applyUniformBuffers())
     {
@@ -3164,7 +3117,7 @@ GLenum Context::getResetStatus()
             mResetStatus = GL_NO_ERROR;
         }
     }
-    
+
     return status;
 }
 
@@ -3390,25 +3343,17 @@ float Context::getTextureMaxAnisotropy() const
     return mMaxTextureAnisotropy;
 }
 
-bool Context::getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, GLenum *type)
+void Context::getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, GLenum *type)
 {
     Framebuffer *framebuffer = getReadFramebuffer();
-    if (!framebuffer || framebuffer->completeness() != GL_FRAMEBUFFER_COMPLETE)
-    {
-        return gl::error(GL_INVALID_OPERATION, false);
-    }
+    ASSERT(framebuffer && framebuffer->completeness() == GL_FRAMEBUFFER_COMPLETE);
 
     Renderbuffer *renderbuffer = framebuffer->getReadColorbuffer();
-    if (!renderbuffer)
-    {
-        return gl::error(GL_INVALID_OPERATION, false);
-    }
+    ASSERT(renderbuffer);
 
     *internalFormat = renderbuffer->getActualFormat();
     *format = gl::GetFormat(renderbuffer->getActualFormat(), mClientVersion);
     *type = gl::GetType(renderbuffer->getActualFormat(), mClientVersion);
-
-    return true;
 }
 
 void Context::detachBuffer(GLuint buffer)
@@ -3618,7 +3563,7 @@ bool Context::skipDraw(GLenum drawMode)
         // undefined when not written, just skip drawing to avoid unexpected results.
         if (!getCurrentProgramBinary()->usesPointSize())
         {
-            // This is stictly speaking not an error, but developers should be 
+            // This is stictly speaking not an error, but developers should be
             // notified of risking undefined behavior.
             ERR("Point rendering without writing to gl_PointSize.");
 
@@ -3768,6 +3713,7 @@ void Context::initExtensionString()
 
         if (supportsPBOs())
         {
+            mExtensionStringList.push_back("NV_pixel_buffer_object");
             mExtensionStringList.push_back("GL_OES_mapbuffer");
             mExtensionStringList.push_back("GL_EXT_map_buffer_range");
         }
@@ -3930,27 +3876,29 @@ const char *Context::getRendererString() const
     return mRendererString;
 }
 
-Context::FramebufferTextureSerialSet Context::getBoundFramebufferTextureSerials()
+size_t Context::getBoundFramebufferTextureSerials(FramebufferTextureSerialArray *outSerialArray)
 {
-    FramebufferTextureSerialSet set;
+    size_t serialCount = 0;
 
     Framebuffer *drawFramebuffer = getDrawFramebuffer();
     for (unsigned int i = 0; i < IMPLEMENTATION_MAX_DRAW_BUFFERS; i++)
     {
         Renderbuffer *renderBuffer = drawFramebuffer->getColorbuffer(i);
-        if (renderBuffer && renderBuffer->getTextureSerial() != 0)
+        if (renderBuffer && renderBuffer->isTexture())
         {
-            set.insert(renderBuffer->getTextureSerial());
+            (*outSerialArray)[serialCount++] = renderBuffer->getTextureSerial();
         }
     }
 
     Renderbuffer *depthStencilBuffer = drawFramebuffer->getDepthOrStencilbuffer();
-    if (depthStencilBuffer && depthStencilBuffer->getTextureSerial() != 0)
+    if (depthStencilBuffer && depthStencilBuffer->isTexture())
     {
-        set.insert(depthStencilBuffer->getTextureSerial());
+        (*outSerialArray)[serialCount++] = depthStencilBuffer->getTextureSerial();
     }
 
-    return set;
+    std::sort(outSerialArray->begin(), outSerialArray->begin() + serialCount);
+
+    return serialCount;
 }
 
 void Context::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,

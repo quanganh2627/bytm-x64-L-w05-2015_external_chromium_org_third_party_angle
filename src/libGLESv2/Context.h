@@ -10,20 +10,17 @@
 #ifndef LIBGLESV2_CONTEXT_H_
 #define LIBGLESV2_CONTEXT_H_
 
-#ifndef GL_APICALL
-#define GL_APICALL
-#endif
 #include <GLES3/gl3.h>
 #include <GLES3/gl3ext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
-#define EGLAPI
 #include <EGL/egl.h>
 
 #include <string>
 #include <set>
 #include <map>
 #include <unordered_map>
+#include <array>
 
 #include "common/angleutils.h"
 #include "common/RefCountObject.h"
@@ -224,10 +221,13 @@ class Context
     GLuint getRenderbufferHandle() const;
     GLuint getVertexArrayHandle() const;
     GLuint getSamplerHandle(GLuint textureUnit) const;
+    unsigned int getActiveSampler() const;
 
     GLuint getArrayBufferHandle() const;
 
-    GLuint getActiveQuery(GLenum target) const;
+    bool isQueryActive() const;
+    const Query *getActiveQuery(GLenum target) const;
+    GLuint getActiveQueryId(GLenum target) const;
 
     void setEnableVertexAttribArray(unsigned int attribNum, bool enabled);
     const VertexAttribute &getVertexAttribState(unsigned int attribNum) const;
@@ -365,10 +365,10 @@ class Context
 
     bool isSampler(GLuint samplerName) const;
 
-    bool getBooleanv(GLenum pname, GLboolean *params);
-    bool getFloatv(GLenum pname, GLfloat *params);
-    bool getIntegerv(GLenum pname, GLint *params);
-    bool getInteger64v(GLenum pname, GLint64 *params);
+    void getBooleanv(GLenum pname, GLboolean *params);
+    void getFloatv(GLenum pname, GLfloat *params);
+    void getIntegerv(GLenum pname, GLint *params);
+    void getInteger64v(GLenum pname, GLint64 *params);
 
     bool getIndexedIntegerv(GLenum target, GLuint index, GLint *data);
     bool getIndexedInteger64v(GLenum target, GLuint index, GLint64 *data);
@@ -445,7 +445,7 @@ class Context
     bool supportsTextureFilterAnisotropy() const;
     bool supportsPBOs() const;
 
-    bool getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, GLenum *type);
+    void getCurrentReadFormatType(GLenum *internalFormat, GLenum *format, GLenum *type);
 
     float getTextureMaxAnisotropy() const;
 
@@ -462,11 +462,15 @@ class Context
   private:
     DISALLOW_COPY_AND_ASSIGN(Context);
 
+    // TODO: std::array may become unavailable using older versions of GCC
+    typedef std::array<unsigned int, IMPLEMENTATION_MAX_FRAMEBUFFER_ATTACHMENTS> FramebufferTextureSerialArray;
+
     bool applyRenderTarget(GLenum drawMode, bool ignoreViewport);
     void applyState(GLenum drawMode);
     void applyShaders(ProgramBinary *programBinary, bool transformFeedbackActive);
-    void applyTextures(ProgramBinary *programBinary);
-    void applyTextures(ProgramBinary *programBinary, SamplerType type);
+    void applyTextures(SamplerType shaderType, Texture *textures[], TextureType *textureTypes, SamplerState *samplers,
+                       size_t textureCount, const FramebufferTextureSerialArray& framebufferSerials,
+                       size_t framebufferSerialCount);
     bool applyUniformBuffers();
     bool applyTransformFeedbackBuffers();
     void markTransformFeedbackUsage();
@@ -479,10 +483,9 @@ class Context
     void detachTransformFeedback(GLuint transformFeedback);
     void detachSampler(GLuint sampler);
 
-    void generateSwizzles(ProgramBinary *programBinary);
-    void generateSwizzles(ProgramBinary *programBinary, SamplerType type);
-    bool getCurrentTextureAndSamplerState(ProgramBinary *programBinary, SamplerType type, int index, Texture **outTexture,
-                                   TextureType *outTextureType, SamplerState *outSampler);
+    void generateSwizzles(Texture *textures[], size_t count);
+    size_t getCurrentTexturesAndSamplerStates(ProgramBinary *programBinary, SamplerType type, Texture **outTextures,
+                                              TextureType *outTextureTypes, SamplerState *outSamplers);
     Texture *getIncompleteTexture(TextureType type);
 
     bool skipDraw(GLenum drawMode);
@@ -490,8 +493,7 @@ class Context
     void initExtensionString();
     void initRendererString();
 
-    typedef std::set<unsigned> FramebufferTextureSerialSet;
-    FramebufferTextureSerialSet getBoundFramebufferTextureSerials();
+    size_t getBoundFramebufferTextureSerials(FramebufferTextureSerialArray *outSerialArray);
 
     rx::Renderer *const mRenderer;
 

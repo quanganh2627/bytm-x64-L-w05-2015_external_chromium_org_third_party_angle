@@ -125,7 +125,7 @@ const std::vector<InterfaceBlock> &Shader::getInterfaceBlocks() const
     return mActiveInterfaceBlocks;
 }
 
-std::vector<Varying> &Shader::getVaryings()
+std::vector<PackedVarying> &Shader::getVaryings()
 {
     return mVaryings;
 }
@@ -227,7 +227,11 @@ void Shader::parseVaryings(void *compiler)
     {
         std::vector<Varying> *activeVaryings;
         ShGetInfoPointer(compiler, SH_ACTIVE_VARYINGS_ARRAY, reinterpret_cast<void**>(&activeVaryings));
-        mVaryings = *activeVaryings;
+
+        for (size_t varyingIndex = 0; varyingIndex < activeVaryings->size(); varyingIndex++)
+        {
+            mVaryings.push_back(PackedVarying((*activeVaryings)[varyingIndex]));
+        }
 
         mUsesMultipleRenderTargets = mHlsl.find("GL_USES_MRT")          != std::string::npos;
         mUsesFragColor             = mHlsl.find("GL_USES_FRAG_COLOR")   != std::string::npos;
@@ -440,7 +444,7 @@ static const GLenum varyingPriorityList[] =
 };
 
 // true if varying x has a higher priority in packing than y
-bool Shader::compareVarying(const ShaderVariable &x, const ShaderVariable &y)
+bool Shader::compareVarying(const PackedVarying &x, const PackedVarying &y)
 {
     if (x.type == y.type)
     {
@@ -577,6 +581,23 @@ void FragmentShader::uncompile()
 const std::vector<Attribute> &FragmentShader::getOutputVariables() const
 {
     return mActiveOutputVariables;
+}
+
+ShShaderOutput Shader::getCompilerOutputType(GLenum shader)
+{
+    void *compiler = NULL;
+
+    switch (shader)
+    {
+      case GL_VERTEX_SHADER:   compiler = mVertexCompiler;   break;
+      case GL_FRAGMENT_SHADER: compiler = mFragmentCompiler; break;
+      default: UNREACHABLE();  return SH_HLSL9_OUTPUT;
+    }
+
+    size_t outputType = 0;
+    ShGetInfo(compiler, SH_OUTPUT_TYPE, &outputType);
+
+    return static_cast<ShShaderOutput>(outputType);
 }
 
 }

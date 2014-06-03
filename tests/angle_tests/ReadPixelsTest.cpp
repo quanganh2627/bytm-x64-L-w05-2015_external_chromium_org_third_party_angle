@@ -141,3 +141,155 @@ TEST_F(ReadPixelsTest, pbo_with_other_target)
     glUnmapBuffer(GL_ARRAY_BUFFER);
     EXPECT_GL_NO_ERROR();
 }
+
+TEST_F(ReadPixelsTest, pbo_with_existing_data)
+{
+    // Clear backbuffer to red
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    // Read 16x16 region from red backbuffer to PBO
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+    glReadPixels(0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+    // Clear backbuffer to green
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    // Read 16x16 region from green backbuffer to PBO at offset 16
+    glReadPixels(0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid*>(16));
+    GLvoid * mappedPtr = glMapBufferRange(GL_PIXEL_PACK_BUFFER, 0, 32, GL_MAP_READ_BIT);
+    unsigned char *dataPtr = static_cast<unsigned char *>(mappedPtr);
+    EXPECT_GL_NO_ERROR();
+
+    // Test pixel 0 is red (existing data)
+    EXPECT_EQ(255, dataPtr[0]);
+    EXPECT_EQ(0, dataPtr[1]);
+    EXPECT_EQ(0, dataPtr[2]);
+    EXPECT_EQ(255, dataPtr[3]);
+
+    // Test pixel 16 is green (new data)
+    EXPECT_EQ(0, dataPtr[16 * 4 + 0]);
+    EXPECT_EQ(255, dataPtr[16 * 4 + 1]);
+    EXPECT_EQ(0, dataPtr[16 * 4 + 2]);
+    EXPECT_EQ(255, dataPtr[16 * 4 + 3]);
+
+    glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+    EXPECT_GL_NO_ERROR();
+}
+
+TEST_F(ReadPixelsTest, pbo_and_sub_data)
+{
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+    glReadPixels(0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+    unsigned char data[4] = { 1, 2, 3, 4 };
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, mPBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 4, data);
+
+    GLvoid *mappedPtr = glMapBufferRange(GL_ARRAY_BUFFER, 0, 32, GL_MAP_READ_BIT);
+    unsigned char *dataPtr = static_cast<unsigned char *>(mappedPtr);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_EQ(1, dataPtr[0]);
+    EXPECT_EQ(2, dataPtr[1]);
+    EXPECT_EQ(3, dataPtr[2]);
+    EXPECT_EQ(4, dataPtr[3]);
+
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    EXPECT_GL_NO_ERROR();
+}
+
+TEST_F(ReadPixelsTest, pbo_and_sub_data_offset)
+{
+    glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    EXPECT_GL_NO_ERROR();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+    glReadPixels(0, 0, 16, 16, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+    unsigned char data[4] = { 1, 2, 3, 4 };
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, mPBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 16, 4, data);
+
+    GLvoid *mappedPtr = glMapBufferRange(GL_ARRAY_BUFFER, 0, 32, GL_MAP_READ_BIT);
+    unsigned char *dataPtr = static_cast<unsigned char *>(mappedPtr);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_EQ(255, dataPtr[0]);
+    EXPECT_EQ(0, dataPtr[1]);
+    EXPECT_EQ(0, dataPtr[2]);
+    EXPECT_EQ(255, dataPtr[3]);
+
+    EXPECT_EQ(1, dataPtr[16]);
+    EXPECT_EQ(2, dataPtr[17]);
+    EXPECT_EQ(3, dataPtr[18]);
+    EXPECT_EQ(4, dataPtr[19]);
+
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    EXPECT_GL_NO_ERROR();
+}
+
+TEST_F(ReadPixelsTest, draw_with_pbo)
+{
+    unsigned char data[4] = { 1, 2, 3, 4 };
+
+    glBindTexture(GL_TEXTURE_2D, mTexture);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    EXPECT_GL_NO_ERROR();
+
+    // glReadBuffer(GL_COLOR_ATTACHMENT0); // FIXME: currently UNIMPLEMENTED
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mFBO);
+    EXPECT_GL_NO_ERROR();
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, mPBO);
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    EXPECT_GL_NO_ERROR();
+
+    float positionData[] = { 0.5f, 0.5f };
+
+    glUseProgram(mProgram);
+    glViewport(0, 0, 1, 1);
+    glBindBuffer(GL_ARRAY_BUFFER, mPositionVBO);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, 1 * 2 * 4, positionData);
+    EXPECT_GL_NO_ERROR();
+
+    GLint positionLocation = glGetAttribLocation(mProgram, "aPosition");
+    EXPECT_NE(-1, positionLocation);
+
+    GLint testLocation = glGetAttribLocation(mProgram, "aTest");
+    EXPECT_NE(-1, testLocation);
+
+    glVertexAttribPointer(positionLocation, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionLocation);
+    EXPECT_GL_NO_ERROR();
+
+    glBindBuffer(GL_ARRAY_BUFFER, mPBO);
+    glVertexAttribPointer(testLocation, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(testLocation);
+    EXPECT_GL_NO_ERROR();
+
+    glDrawArrays(GL_POINTS, 0, 1);
+    EXPECT_GL_NO_ERROR();
+
+    memset(data, 0, 4);
+    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    EXPECT_GL_NO_ERROR();
+
+    EXPECT_EQ(1, data[0]);
+    EXPECT_EQ(2, data[1]);
+    EXPECT_EQ(3, data[2]);
+    EXPECT_EQ(4, data[3]);
+}

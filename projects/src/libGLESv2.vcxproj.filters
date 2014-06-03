@@ -37,6 +37,9 @@
     <Filter Include="src\third_party">
       <UniqueIdentifier>{D6C6CEA7-AAD0-03AD-2394-AC6FCBF8A498}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\third_party\systeminfo">
+      <UniqueIdentifier>{8E42519F-DD71-5875-38CA-0ED32E34DB55}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\third_party\murmurhash">
       <UniqueIdentifier>{FBF5769C-D63C-9100-0719-0B97CE76B013}</UniqueIdentifier>
     </Filter>
@@ -447,22 +450,22 @@
     <ClCompile Include="..\..\src\libGLESv2\renderer\d3d11\BufferStorage11.cpp">
       <Filter>src\libGLESv2\renderer\d3d11</Filter>
     </ClCompile>
-    <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\Swizzle11.hlsl">
-      <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
-    </None>
     <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\Clear11.hlsl">
       <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
     </None>
     <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\generate_shaders.bat">
       <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
     </None>
-    <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\BufferToTexture11.hlsl">
+    <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\Swizzle11.hlsl">
       <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
     </None>
     <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\Passthrough2D11.hlsl">
       <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
     </None>
     <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\Passthrough3D11.hlsl">
+      <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
+    </None>
+    <None Include="..\..\src\libGLESv2\renderer\d3d11\shaders\BufferToTexture11.hlsl">
       <Filter>src\libGLESv2\renderer\d3d11\shaders</Filter>
     </None>
     <ClInclude Include="..\..\src\libGLESv2\renderer\d3d11\shaders\compiled\passthroughr2di11ps.h">
@@ -663,12 +666,12 @@
     <ClInclude Include="..\..\src\libGLESv2\renderer\d3d9\SwapChain9.h">
       <Filter>src\libGLESv2\renderer\d3d9</Filter>
     </ClInclude>
-    <ClCompile Include="..\..\src\libGLESv2\renderer\d3d9\Fence9.cpp">
-      <Filter>src\libGLESv2\renderer\d3d9</Filter>
-    </ClCompile>
     <ClInclude Include="..\..\src\libGLESv2\renderer\d3d9\formatutils9.h">
       <Filter>src\libGLESv2\renderer\d3d9</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\src\libGLESv2\renderer\d3d9\Fence9.cpp">
+      <Filter>src\libGLESv2\renderer\d3d9</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\libGLESv2\renderer\d3d9\SwapChain9.cpp">
       <Filter>src\libGLESv2\renderer\d3d9</Filter>
     </ClCompile>
@@ -786,12 +789,15 @@
     <ClCompile Include="..\..\src\common\debug.cpp">
       <Filter>src\common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\common\shadervars.cpp">
-      <Filter>src\common</Filter>
-    </ClCompile>
     <ClInclude Include="..\..\src\common\version.h">
       <Filter>src\common</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\third_party\systeminfo\SystemInfo.h">
+      <Filter>src\third_party\systeminfo</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\src\third_party\systeminfo\SystemInfo.cpp">
+      <Filter>src\third_party\systeminfo</Filter>
+    </ClCompile>
     <ClInclude Include="..\..\src\third_party\murmurhash\MurmurHash3.h">
       <Filter>src\third_party\murmurhash</Filter>
     </ClInclude>
