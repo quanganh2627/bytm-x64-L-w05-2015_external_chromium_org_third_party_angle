@@ -42,7 +42,7 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4100;4127;4189;4239;4244;4245;4512;4702;4530;4718;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4127;4239;4244;4245;4512;4702;4530;4718;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MinimalRebuild>false</MinimalRebuild>
       <Optimization>Disabled</Optimization>
@@ -79,7 +79,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4100;4127;4189;4239;4244;4245;4512;4702;4530;4718;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4127;4239;4244;4245;4512;4702;4530;4718;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MinimalRebuild>false</MinimalRebuild>
       <Optimization>MaxSpeed</Optimization>
@@ -152,6 +152,7 @@
     <ClInclude Include="..\..\src\libGLESv2\Fence.h"/>
     <ClInclude Include="..\..\src\libGLESv2\angletypes.h"/>
     <ClInclude Include="..\..\src\libGLESv2\main.h"/>
+    <ClInclude Include="..\..\src\libGLESv2\FramebufferAttachment.h"/>
     <ClInclude Include="..\..\src\libGLESv2\Framebuffer.h"/>
     <ClInclude Include="..\..\src\libGLESv2\formatutils.h"/>
     <ClInclude Include="..\..\src\libGLESv2\renderer\IndexDataManager.h"/>
@@ -304,6 +305,7 @@
     <ClCompile Include="..\..\src\libGLESv2\Float16ToFloat32.cpp"/>
     <ClCompile Include="..\..\src\libGLESv2\ResourceManager.cpp"/>
     <ClCompile Include="..\..\src\libGLESv2\validationES3.cpp"/>
+    <ClCompile Include="..\..\src\libGLESv2\FramebufferAttachment.cpp"/>
     <ClCompile Include="..\..\src\libGLESv2\Query.cpp"/>
     <ClCompile Include="..\..\src\libGLESv2\libGLESv2.cpp"/>
     <ClCompile Include="..\..\src\libGLESv2\formatutils.cpp"/>
