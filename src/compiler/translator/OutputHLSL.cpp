@@ -136,8 +136,6 @@ OutputHLSL::OutputHLSL(TParseContext &context, const ShBuiltInResources& resourc
 
     mNumRenderTargets = resources.EXT_draw_buffers ? resources.MaxDrawBuffers : 1;
 
-    mScopeDepth = 0;
-
     mUniqueIndex = 0;
 
     mContainsLoopDiscontinuity = false;
@@ -2257,17 +2255,6 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
             {
                 outputLineDirective(node->getLine().first_line);
                 out << "{\n";
-
-                mScopeDepth++;
-
-                if (mScopeBracket.size() < mScopeDepth)
-                {
-                    mScopeBracket.push_back(0);   // New scope level
-                }
-                else
-                {
-                    mScopeBracket[mScopeDepth - 1]++;   // New scope at existing level
-                }
             }
 
             for (TIntermSequence::iterator sit = node->getSequence().begin(); sit != node->getSequence().end(); sit++)
@@ -2283,8 +2270,6 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
             {
                 outputLineDirective(node->getLine().last_line);
                 out << "}\n";
-
-                mScopeDepth--;
             }
 
             return false;
@@ -2299,7 +2284,7 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
             {
                 if (variable->getType().getStruct())
                 {
-                    addConstructor(variable->getType(), scopedStruct(variable->getType().getStruct()->name()), NULL);
+                    addConstructor(variable->getType(), structNameString(*variable->getType().getStruct()), NULL);
                 }
 
                 if (!variable->getAsSymbolNode() || variable->getAsSymbolNode()->getSymbol() != "")   // Variable declaration
@@ -2426,7 +2411,7 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
                 {
                     if (symbol->getType().getStruct())
                     {
-                        addConstructor(symbol->getType(), scopedStruct(symbol->getType().getStruct()->name()), NULL);
+                        addConstructor(symbol->getType(), structNameString(*symbol->getType().getStruct()), NULL);
                     }
 
                     out << argumentString(symbol);
@@ -2694,8 +2679,11 @@ bool OutputHLSL::visitAggregate(Visit visit, TIntermAggregate *node)
         outputTriplet(visit, "mat4(", ", ", ")");
         break;
       case EOpConstructStruct:
-        addConstructor(node->getType(), scopedStruct(node->getType().getStruct()->name()), &node->getSequence());
-        outputTriplet(visit, structLookup(node->getType().getStruct()->name()) + "_ctor(", ", ", ")");
+        {
+            const TString &structName = structNameString(*node->getType().getStruct());
+            addConstructor(node->getType(), structName, &node->getSequence());
+            outputTriplet(visit, structName + "_ctor(", ", ", ")");
+        }
         break;
       case EOpLessThan:         outputTriplet(visit, "(", " < ", ")");                 break;
       case EOpGreaterThan:      outputTriplet(visit, "(", " > ", ")");                 break;
@@ -3320,7 +3308,7 @@ TString OutputHLSL::typeString(const TType &type)
         const TString& typeName = structure->name();
         if (typeName != "")
         {
-            return structLookup(typeName);
+            return structNameString(*type.getStruct());
         }
         else   // Nameless structure, define in place
         {
@@ -3527,7 +3515,7 @@ TString OutputHLSL::structureTypeName(const TStructure &structure, bool useHLSLR
         prefix += "rm";
     }
 
-    return prefix + structLookup(structure.name());
+    return prefix + structNameString(structure);
 }
 
 void OutputHLSL::addConstructor(const TType &type, const TString &name, const TIntermSequence *parameters)
@@ -3537,7 +3525,7 @@ void OutputHLSL::addConstructor(const TType &type, const TString &name, const TI
         return;   // Nameless structures don't have constructors
     }
 
-    if (type.getStruct() && mStructNames.find(decorate(name)) != mStructNames.end())
+    if (type.getStruct() && mStructNames.find(name) != mStructNames.end())
     {
         return;   // Already added
     }
@@ -3547,15 +3535,13 @@ void OutputHLSL::addConstructor(const TType &type, const TString &name, const TI
     ctorType.setPrecision(EbpHigh);
     ctorType.setQualifier(EvqTemporary);
 
-    TString ctorName = type.getStruct() ? decorate(name) : name;
-
     typedef std::vector<TType> ParameterArray;
     ParameterArray ctorParameters;
 
     const TStructure* structure = type.getStruct();
     if (structure)
     {
-        mStructNames.insert(decorate(name));
+        mStructNames.insert(name);
 
         const TString &structString = structureString(*structure, false, false);
 
@@ -3596,11 +3582,11 @@ void OutputHLSL::addConstructor(const TType &type, const TString &name, const TI
 
     if (ctorType.getStruct())
     {
-        constructor += ctorName + " " + ctorName + "_ctor(";
+        constructor += name + " " + name + "_ctor(";
     }
     else   // Built-in type
     {
-        constructor += typeString(ctorType) + " " + ctorName + "(";
+        constructor += typeString(ctorType) + " " + name + "(";
     }
 
     for (unsigned int parameter = 0; parameter < ctorParameters.size(); parameter++)
@@ -3620,7 +3606,7 @@ void OutputHLSL::addConstructor(const TType &type, const TString &name, const TI
 
     if (ctorType.getStruct())
     {
-        constructor += "    " + ctorName + " structure = {";
+        constructor += "    " + name + " structure = {";
     }
     else
     {
@@ -3754,7 +3740,7 @@ const ConstantUnion *OutputHLSL::writeConstantUnion(const TType &type, const Con
     const TStructure* structure = type.getStruct();
     if (structure)
     {
-        out << structLookup(structure->name()) + "_ctor(";
+        out << structNameString(*structure) + "_ctor(";
         
         const TFieldList& fields = structure->fields();
 
@@ -3808,46 +3794,14 @@ const ConstantUnion *OutputHLSL::writeConstantUnion(const TType &type, const Con
     return constUnion;
 }
 
-TString OutputHLSL::scopeString(unsigned int depthLimit)
+TString OutputHLSL::structNameString(const TStructure &structure)
 {
-    TString string;
-
-    for (unsigned int i = 0; i < mScopeBracket.size() && i < depthLimit; i++)
+    if (structure.name().empty())
     {
-        string += "_" + str(mScopeBracket[i]);
+        return "";
     }
 
-    return string;
-}
-
-TString OutputHLSL::scopedStruct(const TString &typeName)
-{
-    if (typeName == "")
-    {
-        return typeName;
-    }
-
-    return typeName + scopeString(mScopeDepth);
-}
-
-TString OutputHLSL::structLookup(const TString &typeName)
-{
-    for (int depth = mScopeDepth; depth >= 0; depth--)
-    {
-        TString scopedName = decorate(typeName + scopeString(depth));
-
-        for (StructNames::iterator structName = mStructNames.begin(); structName != mStructNames.end(); structName++)
-        {
-            if (*structName == scopedName)
-            {
-                return scopedName;
-            }
-        }
-    }
-
-    UNREACHABLE();   // Should have found a matching constructor
-
-    return typeName;
+    return "ss_" + str(structure.uniqueId()) + structure.name();
 }
 
 TString OutputHLSL::decorate(const TString &string)
