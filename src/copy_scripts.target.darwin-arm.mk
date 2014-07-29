@@ -15,22 +15,17 @@ gyp_shared_intermediate_dir := $(call intermediates-dir-for,GYP,shared,,,$(GYP_V
 GYP_TARGET_DEPENDENCIES :=
 
 ### Generated for copy rule.
-$(gyp_shared_intermediate_dir)/commit_id.bat: $(LOCAL_PATH)/third_party/angle/src/commit_id.bat $(GYP_TARGET_DEPENDENCIES) | $(ACP)
+$(gyp_shared_intermediate_dir)/angle/copy_compiler_dll.bat: $(LOCAL_PATH)/third_party/angle/src/copy_compiler_dll.bat $(GYP_TARGET_DEPENDENCIES) | $(ACP)
 	@echo Copying: $@
 	$(hide) mkdir -p $(dir $@)
 	$(hide) $(ACP) -rpf $< $@
 
-$(gyp_shared_intermediate_dir)/copy_compiler_dll.bat: $(LOCAL_PATH)/third_party/angle/src/copy_compiler_dll.bat $(GYP_TARGET_DEPENDENCIES) | $(ACP)
+$(gyp_shared_intermediate_dir)/angle/commit_id.py: $(LOCAL_PATH)/third_party/angle/src/commit_id.py $(GYP_TARGET_DEPENDENCIES) | $(ACP)
 	@echo Copying: $@
 	$(hide) mkdir -p $(dir $@)
 	$(hide) $(ACP) -rpf $< $@
 
-$(gyp_shared_intermediate_dir)/commit_id.py: $(LOCAL_PATH)/third_party/angle/src/commit_id.py $(GYP_TARGET_DEPENDENCIES) | $(ACP)
-	@echo Copying: $@
-	$(hide) mkdir -p $(dir $@)
-	$(hide) $(ACP) -rpf $< $@
-
-third_party_angle_src_build_angle_gyp_copy_scripts_target_copies = $(gyp_shared_intermediate_dir)/commit_id.bat $(gyp_shared_intermediate_dir)/copy_compiler_dll.bat $(gyp_shared_intermediate_dir)/commit_id.py
+third_party_angle_src_build_angle_gyp_copy_scripts_target_copies = $(gyp_shared_intermediate_dir)/angle/copy_compiler_dll.bat $(gyp_shared_intermediate_dir)/angle/commit_id.py
 
 GYP_GENERATED_OUTPUTS := \
 	$(third_party_angle_src_build_angle_gyp_copy_scripts_target_copies)
