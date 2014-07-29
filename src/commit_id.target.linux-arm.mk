@@ -15,20 +15,20 @@ gyp_shared_intermediate_dir := $(call intermediates-dir-for,GYP,shared,,,$(GYP_V
 GYP_TARGET_DEPENDENCIES := \
 	$(call intermediates-dir-for,GYP,third_party_angle_src_copy_scripts_gyp,,,$(GYP_VAR_PREFIX))/copy_scripts.stamp
 
-### Rules for action "Generate Commit ID Header":
-$(gyp_shared_intermediate_dir)/commit.h: gyp_local_path := $(LOCAL_PATH)
-$(gyp_shared_intermediate_dir)/commit.h: gyp_var_prefix := $(GYP_VAR_PREFIX)
-$(gyp_shared_intermediate_dir)/commit.h: gyp_intermediate_dir := $(abspath $(gyp_intermediate_dir))
-$(gyp_shared_intermediate_dir)/commit.h: gyp_shared_intermediate_dir := $(abspath $(gyp_shared_intermediate_dir))
-$(gyp_shared_intermediate_dir)/commit.h: export PATH := $(subst $(ANDROID_BUILD_PATHS),,$(PATH))
-$(gyp_shared_intermediate_dir)/commit.h: $(gyp_shared_intermediate_dir)/commit_id.py $(LOCAL_PATH)/third_party/angle/.git/index $(GYP_TARGET_DEPENDENCIES)
-	@echo "Gyp action: Generating commit ID header... ($@)"
-	$(hide)cd $(gyp_local_path)/third_party/angle/src; mkdir -p $(gyp_shared_intermediate_dir); python "$(gyp_shared_intermediate_dir)/commit_id.py" "$(gyp_shared_intermediate_dir)/commit.h"
+### Rules for action "Generate ANGLE Commit ID Header":
+$(gyp_shared_intermediate_dir)/angle/id/commit.h: gyp_local_path := $(LOCAL_PATH)
+$(gyp_shared_intermediate_dir)/angle/id/commit.h: gyp_var_prefix := $(GYP_VAR_PREFIX)
+$(gyp_shared_intermediate_dir)/angle/id/commit.h: gyp_intermediate_dir := $(abspath $(gyp_intermediate_dir))
+$(gyp_shared_intermediate_dir)/angle/id/commit.h: gyp_shared_intermediate_dir := $(abspath $(gyp_shared_intermediate_dir))
+$(gyp_shared_intermediate_dir)/angle/id/commit.h: export PATH := $(subst $(ANDROID_BUILD_PATHS),,$(PATH))
+$(gyp_shared_intermediate_dir)/angle/id/commit.h: $(gyp_shared_intermediate_dir)/angle/commit_id.py $(LOCAL_PATH)/third_party/angle/.git/index $(GYP_TARGET_DEPENDENCIES)
+	@echo "Gyp action: Generating ANGLE Commit ID ($@)"
+	$(hide)cd $(gyp_local_path)/third_party/angle/src; mkdir -p $(gyp_shared_intermediate_dir)/angle/id; python "$(gyp_shared_intermediate_dir)/angle/commit_id.py" gen ../../../third_party/angle "$(gyp_shared_intermediate_dir)/angle/id/commit.h"
 
 
 
 GYP_GENERATED_OUTPUTS := \
-	$(gyp_shared_intermediate_dir)/commit.h
+	$(gyp_shared_intermediate_dir)/angle/id/commit.h
 
 # Make sure our deps and generated files are built first.
 LOCAL_ADDITIONAL_DEPENDENCIES := $(GYP_TARGET_DEPENDENCIES) $(GYP_GENERATED_OUTPUTS)
